@@ -2,49 +2,85 @@
 @section('content')
 
     <!-- Hero -->
-    <section id="home" class="relative w-full max-w-screen-xl mx-auto scroll-mt-24" data-carousel="static">
-        <!-- Carousel wrapper -->
-        <div class="relative w-full overflow-hidden rounded-lg">
-            <div class="relative w-full" style="padding-top:50%;">
-                <!-- Item 1 -->
-                <div class="hidden duration-700 ease-in-out" data-carousel-item="active">
-                    <img src="{{ asset('images/assets/hero.png') }}" class="absolute inset-0 h-full w-full object-cover"
-                        alt="Hero">
+    @php
+        $heroSlides = [
+            [
+                'image' => asset('images/assets/hero.png'),
+                'alt' => 'Kegiatan hero PPM',
+            ],
+            [
+                'image' => asset('images/assets/hero2.png'),
+                'alt' => 'Suasana pembelajaran PPM',
+            ],
+        ];
+    @endphp
+    <section id="home" class="mx-auto w-full max-w-screen-xl px-4 pt-2 md:px-8 scroll-mt-24">
+        <div class="overflow-hidden rounded-[2.5rem] border border-[#DDE4E2] bg-[#F8FAF8] shadow-xl/10">
+            <div class="relative px-3 py-3 md:px-4 md:py-4" data-carousel="static">
+                <div class="absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top_left,_rgba(150,177,173,0.18),_transparent_42%),radial-gradient(circle_at_top_right,_rgba(51,75,73,0.14),_transparent_36%)]"></div>
+
+                <div class="relative overflow-hidden rounded-[2rem]">
+                    <div class="relative min-h-[420px] w-full md:min-h-[520px]">
+                        @foreach ($heroSlides as $index => $slide)
+                            <div class="hidden duration-700 ease-in-out" @if ($index === 0) data-carousel-item="active" @else data-carousel-item @endif>
+                                <img src="{{ $slide['image'] }}" class="absolute inset-0 h-full w-full object-cover"
+                                    alt="{{ $slide['alt'] }}">
+                            </div>
+                        @endforeach
+
+                        <div class="absolute inset-0 flex items-end">
+                            <div class="w-full p-6 md:p-10">
+                                <div class="max-w-2xl rounded-[2rem] border border-white/20 bg-white/12 p-6 text-white shadow-2xl shadow-black/20 backdrop-blur-sm md:p-8">
+                                    <span class="inline-flex items-center rounded-full bg-white/18 px-4 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-white/90">
+                                        Pondok Pesantren Mahasiswa
+                                    </span>
+                                    <h1 class="mt-4 text-4xl font-bold leading-tight md:text-5xl">
+                                        PPM Al-Kautsar
+                                        <span class="block text-[#DDE4E2]">Bina Insani Purwokerto</span>
+                                    </h1>
+                                    <p class="mt-4 max-w-xl text-sm leading-7 text-white/85 md:text-base">
+                                        Ruang pembinaan yang memadukan ilmu, adab, dan kedisiplinan untuk menyiapkan santri
+                                        yang religius, bertumbuh, dan siap berkontribusi.
+                                    </p>
+                                    <div class="mt-6 flex flex-wrap gap-3">
+                                        <span class="rounded-full bg-white/14 px-4 py-2 text-sm font-medium text-white/90">Pembinaan intensif</span>
+                                        <span class="rounded-full bg-white/14 px-4 py-2 text-sm font-medium text-white/90">Lingkungan terarah</span>
+                                        <span class="rounded-full bg-white/14 px-4 py-2 text-sm font-medium text-white/90">Penguatan karakter</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <!-- Item 2 -->
-                <div class="hidden duration-700 ease-in-out" data-carousel-item>
-                    <img src="{{ asset('images/assets/hero2.png') }}" class="absolute inset-0 h-full w-full object-cover"
-                        alt="Hero">
-                </div>
+
+                <button type="button"
+                    class="absolute left-6 top-1/2 z-30 flex -translate-y-1/2 items-center justify-center focus:outline-none"
+                    data-carousel-prev>
+                    <span
+                        class="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/16 text-white shadow-lg backdrop-blur-sm transition hover:bg-white/26 focus:ring-4 focus:ring-white/25">
+                        <svg class="h-4 w-4 rtl:rotate-180" aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M5 1 1 5l4 4" />
+                        </svg>
+                        <span class="sr-only">Previous</span>
+                    </span>
+                </button>
+                <button type="button"
+                    class="absolute right-6 top-1/2 z-30 flex -translate-y-1/2 items-center justify-center focus:outline-none"
+                    data-carousel-next>
+                    <span
+                        class="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/16 text-white shadow-lg backdrop-blur-sm transition hover:bg-white/26 focus:ring-4 focus:ring-white/25">
+                        <svg class="h-4 w-4 rtl:rotate-180" aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="m1 9 4-4-4-4" />
+                        </svg>
+                        <span class="sr-only">Next</span>
+                    </span>
+                </button>
             </div>
         </div>
-        <!-- Slider controls -->
-        <button type="button"
-            class="absolute top-0 start-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
-            data-carousel-prev>
-            <span
-                class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
-                <svg class="w-4 h-4 text-white dark:text-gray-800 rtl:rotate-180" aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M5 1 1 5l4 4" />
-                </svg>
-                <span class="sr-only">Previous</span>
-            </span>
-        </button>
-        <button type="button"
-            class="absolute top-0 end-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
-            data-carousel-next>
-            <span
-                class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
-                <svg class="w-4 h-4 text-white dark:text-gray-800 rtl:rotate-180" aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="m1 9 4-4-4-4" />
-                </svg>
-                <span class="sr-only">Next</span>
-            </span>
-        </button>
     </section>
     <!-- Hero - end -->
 
@@ -86,49 +122,62 @@
     <!-- About Us - end -->
 
     <!-- Struktur Organisasi -->
-    <section id="struktur" class="relative w-full max-w-screen-xl mx-auto shadow-xl/30 scroll-mt-24" data-carousel="static">
-        <!-- Carousel wrapper -->
-        <div class="relative w-full overflow-hidden rounded-lg">
-            <div class="relative w-full" style="padding-top:50%;">
-                <!-- Item 1 -->
-                <div class="hidden duration-700 ease-in-out" data-carousel-item>
-                    <img src="{{ asset('images/assets/struktur1.png') }}"
-                        class="absolute inset-0 h-full w-full object-cover" alt="Hero">
+    @php
+        $structureSlides = [
+            [
+                'image' => asset('images/assets/struktur1.png'),
+                'alt' => 'Bagan struktur organisasi PPM 1',
+            ],
+            [
+                'image' => asset('images/assets/struktur2.png'),
+                'alt' => 'Bagan struktur organisasi PPM 2',
+            ],
+        ];
+    @endphp
+    <section id="struktur" class="mx-auto w-full max-w-screen-xl px-4 py-6 md:px-8 sm:py-8 lg:py-12 scroll-mt-24">
+        <div class="overflow-hidden rounded-[2.5rem] border border-[#DDE4E2] bg-[#F8FAF8] shadow-xl/10">
+            <div class="relative px-3 py-3 md:px-4 md:py-4" data-carousel="static">
+                <div class="absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top_left,_rgba(150,177,173,0.18),_transparent_42%),radial-gradient(circle_at_top_right,_rgba(51,75,73,0.14),_transparent_36%)]"></div>
+
+                <div class="relative overflow-hidden rounded-[2rem]">
+                    <div class="relative min-h-[420px] w-full bg-[#EEF3F1] md:min-h-[520px]">
+                        @foreach ($structureSlides as $index => $slide)
+                            <div class="hidden duration-700 ease-in-out" @if ($index === 0) data-carousel-item="active" @else data-carousel-item @endif>
+                                <img src="{{ $slide['image'] }}" class="absolute inset-0 h-full w-full object-contain bg-white p-6 md:p-10"
+                                    alt="{{ $slide['alt'] }}">
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
-                <!-- Item 2 -->
-                <div class="hidden duration-700 ease-in-out" data-carousel-item="active">
-                    <img src="{{ asset('images/assets/struktur2.png') }}"
-                        class="absolute inset-0 h-full w-full object-cover" alt="Hero">
-                </div>
+
+                <button type="button"
+                    class="absolute left-6 top-1/2 z-30 flex -translate-y-1/2 items-center justify-center focus:outline-none"
+                    data-carousel-prev>
+                    <span
+                        class="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#DDE4E2] bg-white/92 text-[#334B49] shadow-lg backdrop-blur-sm transition hover:bg-white focus:ring-4 focus:ring-[#DDE4E2]">
+                        <svg class="h-4 w-4 rtl:rotate-180" aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M5 1 1 5l4 4" />
+                        </svg>
+                        <span class="sr-only">Previous</span>
+                    </span>
+                </button>
+                <button type="button"
+                    class="absolute right-6 top-1/2 z-30 flex -translate-y-1/2 items-center justify-center focus:outline-none"
+                    data-carousel-next>
+                    <span
+                        class="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#DDE4E2] bg-white/92 text-[#334B49] shadow-lg backdrop-blur-sm transition hover:bg-white focus:ring-4 focus:ring-[#DDE4E2]">
+                        <svg class="h-4 w-4 rtl:rotate-180" aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="m1 9 4-4-4-4" />
+                        </svg>
+                        <span class="sr-only">Next</span>
+                    </span>
+                </button>
             </div>
         </div>
-        <!-- Slider controls -->
-        <button type="button"
-            class="absolute top-0 start-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
-            data-carousel-prev>
-            <span
-                class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
-                <svg class="w-4 h-4 text-white dark:text-gray-800 rtl:rotate-180" aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M5 1 1 5l4 4" />
-                </svg>
-                <span class="sr-only">Previous</span>
-            </span>
-        </button>
-        <button type="button"
-            class="absolute top-0 end-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
-            data-carousel-next>
-            <span
-                class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
-                <svg class="w-4 h-4 text-white dark:text-gray-800 rtl:rotate-180" aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="m1 9 4-4-4-4" />
-                </svg>
-                <span class="sr-only">Next</span>
-            </span>
-        </button>
     </section>
     <!-- Struktur Organisasi - end -->
 
@@ -139,74 +188,95 @@
             $defaultMonthLabel = $defaultSantriMonth['month_label'] ?? 'Belum ada data';
             $defaultMaleCount = $defaultSantriMonth['male_count'] ?? 0;
             $defaultFemaleCount = $defaultSantriMonth['female_count'] ?? 0;
+            $defaultTotalCount = $defaultMaleCount + $defaultFemaleCount;
         @endphp
-        <div class="mx-auto max-w-screen-3xl px-4 md:px-8">
-            <div class="mx-auto w-full max-w-3xl rounded-lg bg-white p-4 shadow-xl/30 md:p-6">
-                <div class="mb-5 md:mb-8">
-                    <h2 class="mb-4 text-center text-2xl font-bold text-gray-800 md:mb-6 lg:text-3xl">Data Santri
-                    </h2>
-                </div>
-                <div class="relative mb-4 flex items-center justify-between border-b border-gray-200 pb-4">
-                    <div class="relative">
-                        <button id="monthButton" type="button"
-                            @if ($santriChart->isEmpty()) disabled @endif
-                            class="inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 disabled:cursor-not-allowed disabled:text-gray-400">
-                            <span data-label>{{ $defaultMonthLabel }}</span>
-                            <svg class="ms-1.5 w-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 10 6">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="m1 1 4 4 4-4" />
-                            </svg>
-                        </button>
+        <div class="mx-auto max-w-screen-2xl px-4 md:px-8">
+            <div class="overflow-hidden rounded-[2rem] border border-[#DDE4E2] bg-[#F8FAF8] shadow-xl/10">
+                <div class="relative px-6 py-8 md:px-8 md:py-10">
+                    <div class="absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top_left,_rgba(150,177,173,0.16),_transparent_42%),radial-gradient(circle_at_top_right,_rgba(51,75,73,0.12),_transparent_36%)]"></div>
 
-                        @if ($santriChart->isNotEmpty())
-                            <div id="monthDropdown"
-                                class="absolute left-0 z-10 mt-2 w-44 divide-y divide-gray-100 rounded-lg bg-white shadow-sm">
-                                <ul class="py-2 text-sm text-gray-700">
-                                    @foreach ($santriChart as $month)
-                                        <li>
-                                            <a href="#" class="month-item block px-4 py-2 hover:bg-gray-100"
-                                                data-month="{{ $month['month_key'] }}">
-                                                {{ $month['month_label'] }}
-                                            </a>
-                                        </li>
-                                    @endforeach
-                                </ul>
+                    <div class="relative mb-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                        <div class="max-w-2xl">
+                            <span class="inline-flex items-center rounded-full bg-[#DDE4E2] px-4 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-[#334B49]">
+                                Statistik Santri
+                            </span>
+                            <h2 class="mt-4 text-3xl font-bold text-[#334B49] md:text-4xl">Data Santri</h2>
+                            <p class="mt-3 text-sm leading-7 text-[#5C716F] md:text-base">
+                                Ringkasan jumlah santri berdasarkan periode pencatatan, dengan distribusi laki-laki dan perempuan.
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                            <div class="rounded-3xl border border-white/80 bg-white/85 px-4 py-3 shadow-lg shadow-[#334B49]/6 backdrop-blur">
+                                <div class="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7A908D]">Total</div>
+                                <div class="mt-2 text-2xl font-bold text-[#334B49]" id="totalCount">{{ $defaultTotalCount }}</div>
+                            </div>
+                            <div class="rounded-3xl border border-[#D7E4F5] bg-[#EEF5FF] px-4 py-3 shadow-lg shadow-[#334B49]/6">
+                                <div class="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#58748D]">Laki-laki</div>
+                                <div class="mt-2 text-2xl font-bold text-[#334B49]" id="maleCount">{{ $defaultMaleCount }}</div>
+                            </div>
+                            <div class="rounded-3xl border border-[#F1D8E4] bg-[#FFF0F6] px-4 py-3 shadow-lg shadow-[#334B49]/6">
+                                <div class="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8D5D75]">Perempuan</div>
+                                <div class="mt-2 text-2xl font-bold text-[#334B49]" id="femaleCount">{{ $defaultFemaleCount }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative rounded-[1.75rem] border border-white/80 bg-white p-5 shadow-lg shadow-[#334B49]/8 md:p-6">
+                        <div class="mb-6 flex flex-col gap-4 border-b border-[#E6EEEB] pb-5 md:flex-row md:items-center md:justify-between">
+                            <div class="relative">
+                                <div class="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7A908D]">Periode Data</div>
+                                <button id="monthButton" type="button"
+                                    @if ($santriChart->isEmpty()) disabled @endif
+                                    class="inline-flex items-center gap-3 rounded-2xl border border-[#DDE4E2] bg-[#F8FAF8] px-4 py-3 text-sm font-semibold text-[#334B49] shadow-sm transition hover:border-[#96B1AD] hover:bg-white disabled:cursor-not-allowed disabled:text-[#9EB0AD]">
+                                    <span data-label>{{ $defaultMonthLabel }}</span>
+                                    <svg class="h-3 w-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                        viewBox="0 0 10 6">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="m1 1 4 4 4-4" />
+                                    </svg>
+                                </button>
+
+                                @if ($santriChart->isNotEmpty())
+                                    <div id="monthDropdown"
+                                        class="absolute left-0 z-10 mt-3 hidden w-56 overflow-hidden rounded-2xl border border-[#E6EEEB] bg-white shadow-xl shadow-[#334B49]/10">
+                                        <ul class="py-2 text-sm text-[#334B49]">
+                                            @foreach ($santriChart as $month)
+                                                <li>
+                                                    <a href="#" class="month-item block px-4 py-3 transition hover:bg-[#F3F6F5]"
+                                                        data-month="{{ $month['month_key'] }}">
+                                                        {{ $month['month_label'] }}
+                                                    </a>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="inline-flex items-center rounded-full bg-[#EEF5FF] px-3 py-2 text-xs font-semibold text-[#3B6488]">
+                                    <span class="mr-2 h-2.5 w-2.5 rounded-full bg-[#5B8DB8]"></span>
+                                    Laki-laki
+                                </span>
+                                <span class="inline-flex items-center rounded-full bg-[#FFF0F6] px-3 py-2 text-xs font-semibold text-[#8A5C72]">
+                                    <span class="mr-2 h-2.5 w-2.5 rounded-full bg-[#D59AB7]"></span>
+                                    Perempuan
+                                </span>
+                            </div>
+                        </div>
+
+                        @if ($santriChart->isEmpty())
+                            <div class="rounded-[1.5rem] border border-dashed border-[#DDE4E2] bg-[#F8FAF8] py-16 text-center text-sm text-[#6E8481]">
+                                Belum ada data santri yang dapat ditampilkan.
+                            </div>
+                        @else
+                            <div class="rounded-[1.5rem] bg-[linear-gradient(180deg,_rgba(248,250,248,0.95),_rgba(255,255,255,1))] p-3 md:p-4">
+                                <div id="column-chart"></div>
                             </div>
                         @endif
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span
-                            class="inline-flex items-center rounded-md bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-800">
-                            <svg class="me-1 h-3.5 w-3.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                fill="currentColor" viewBox="0 0 20 19">
-                                <path
-                                    d="M14.5 0A3.987 3.987 0 0 0 11 2.1a4.977 4.977 0 0 1 3.9 5.858A3.989 3.989 0 0 0 14.5 0ZM9 13h2a4 4 0 0 1 4 4v2H5v-2a4 4 0 0 1 4-4Z" />
-                                <path d="M5 19h10v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2Z" />
-                            </svg>
-                            Laki-laki:&nbsp;<span id="maleCount">{{ $defaultMaleCount }}</span>
-                        </span>
-                        <span
-                            class="inline-flex items-center rounded-md bg-pink-100 px-2.5 py-1 text-xs font-medium text-pink-800">
-                            <svg class="me-1 h-3.5 w-3.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                fill="currentColor" viewBox="0 0 20 19">
-                                <path
-                                    d="M14.5 0A3.987 3.987 0 0 0 11 2.1a4.977 4.977 0 0 1 3.9 5.858A3.989 3.989 0 0 0 14.5 0ZM9 13h2a4 4 0 0 1 4 4v2H5v-2a4 4 0 0 1 4-4Z" />
-                                <path d="M5 19h10v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2Z" />
-                            </svg>
-                            Perempuan:&nbsp;<span id="femaleCount">{{ $defaultFemaleCount }}</span>
-                        </span>
-                    </div>
                 </div>
-
-                @if ($santriChart->isEmpty())
-                    <div
-                        class="rounded-lg border border-dashed border-gray-200 bg-gray-50 py-12 text-center text-sm text-gray-500">
-                        Belum ada data santri yang dapat ditampilkan.
-                    </div>
-                @else
-                    <div id="column-chart"></div>
-                @endif
             </div>
         </div>
     </section>
@@ -222,6 +292,7 @@
             }, {});
             const monthButton = document.getElementById('monthButton');
             const monthDropdown = document.getElementById('monthDropdown');
+            const totalCountEl = document.getElementById('totalCount');
             const maleCountEl = document.getElementById('maleCount');
             const femaleCountEl = document.getElementById('femaleCount');
             const labelEl = monthButton ? monthButton.querySelector('[data-label]') : null;
@@ -229,6 +300,9 @@
             if (!SANTRI_DATA.length) {
                 if (labelEl) {
                     labelEl.textContent = 'Belum ada data';
+                }
+                if (totalCountEl) {
+                    totalCountEl.textContent = totalCountEl.textContent || '0';
                 }
                 if (maleCountEl) {
                     maleCountEl.textContent = maleCountEl.textContent || '0';
@@ -249,24 +323,30 @@
                 const entry = DATA_BY_MONTH[key];
                 if (!entry) {
                     return [
-                        { name: 'Laki-laki', color: '#1A56DB', data: [0] },
-                        { name: 'Perempuan', color: '#FDBA8C', data: [0] },
+                        { name: 'Laki-laki', color: '#5B8DB8', data: [0] },
+                        { name: 'Perempuan', color: '#D59AB7', data: [0] },
                     ];
                 }
 
                 return [
-                    { name: 'Laki-laki', color: '#1A56DB', data: [entry.male_count] },
-                    { name: 'Perempuan', color: '#FDBA8C', data: [entry.female_count] },
+                    { name: 'Laki-laki', color: '#5B8DB8', data: [entry.male_count] },
+                    { name: 'Perempuan', color: '#D59AB7', data: [entry.female_count] },
                 ];
             };
 
             const updateCounts = (key) => {
                 const entry = DATA_BY_MONTH[key];
+                const maleCount = entry ? entry.male_count : 0;
+                const femaleCount = entry ? entry.female_count : 0;
+
+                if (totalCountEl) {
+                    totalCountEl.textContent = maleCount + femaleCount;
+                }
                 if (maleCountEl) {
-                    maleCountEl.textContent = entry ? entry.male_count : 0;
+                    maleCountEl.textContent = maleCount;
                 }
                 if (femaleCountEl) {
-                    femaleCountEl.textContent = entry ? entry.female_count : 0;
+                    femaleCountEl.textContent = femaleCount;
                 }
                 if (labelEl) {
                     labelEl.textContent = entry ? entry.month_label : 'Belum ada data';
@@ -274,20 +354,20 @@
             };
 
             const options = {
-                colors: ['#1A56DB', '#FDBA8C'],
+                colors: ['#5B8DB8', '#D59AB7'],
                 series: makeSeries(fallbackKey),
                 chart: {
                     type: 'bar',
-                    height: 320,
+                    height: 380,
                     fontFamily: 'Inter, sans-serif',
                     toolbar: { show: false },
                 },
                 plotOptions: {
                     bar: {
                         horizontal: false,
-                        columnWidth: '45%',
+                        columnWidth: '42%',
                         borderRadiusApplication: 'end',
-                        borderRadius: 8,
+                        borderRadius: 14,
                     },
                 },
                 xaxis: {
@@ -296,26 +376,42 @@
                         show: true,
                         style: {
                             fontFamily: 'Inter, sans-serif',
-                            cssClass: 'text-xs font-normal fill-gray-500',
+                            cssClass: 'text-xs font-semibold fill-[#6E8481]',
                         },
                     },
                     axisBorder: { show: false },
                     axisTicks: { show: false },
                 },
-                legend: { show: true },
+                legend: { show: false },
                 tooltip: {
                     shared: false,
                     intersect: true,
                     style: { fontFamily: 'Inter, sans-serif' },
+                    y: {
+                        formatter: (value) => `${value} santri`,
+                    },
                 },
                 grid: {
-                    show: false,
-                    strokeDashArray: 4,
-                    padding: { left: 2, right: 2, top: -14 },
+                    borderColor: '#E6EEEB',
+                    strokeDashArray: 5,
+                    xaxis: { lines: { show: false } },
+                    yaxis: { lines: { show: true } },
+                    padding: { left: 6, right: 12, top: 0, bottom: 0 },
                 },
                 dataLabels: { enabled: false },
                 stroke: { show: true, width: 0, colors: ['transparent'] },
-                yaxis: { show: true },
+                yaxis: {
+                    show: true,
+                    min: 0,
+                    forceNiceScale: true,
+                    labels: {
+                        style: {
+                            colors: ['#7A908D'],
+                            fontSize: '12px',
+                            fontFamily: 'Inter, sans-serif',
+                        },
+                    },
+                },
                 fill: { opacity: 1 },
             };
 
@@ -364,90 +460,113 @@
     <!-- Data Santri - end -->
 
     <!-- Kurikulum -->
-    <section id="kurikulum" class="bg-white py-6 sm:py-8 lg:py-12 scroll-mt-24">
+    <section id="kurikulum" class="bg-white py-10 sm:py-12 lg:py-16 scroll-mt-24">
+        @php
+            $curriculumItems = [
+                [
+                    'title' => 'Pegon Bacaan',
+                    'description' => 'Pembiasaan membaca teks pegon untuk memperkuat dasar kitab dan ketelitian lafaz.',
+                    'accent' => 'from-[#DDE4E2] to-[#F5F7F6]',
+                    'icon' => 'book',
+                ],
+                [
+                    'title' => 'Lambatan',
+                    'description' => 'Kelas bertahap dengan pendampingan intensif agar santri membangun pemahaman dari fondasi.',
+                    'accent' => 'from-[#E8DCC8] to-[#F7F2EA]',
+                    'icon' => 'layers',
+                ],
+                [
+                    'title' => 'Cepatan',
+                    'description' => 'Jalur percepatan untuk santri yang siap menempuh materi lebih padat dan ritme lebih tinggi.',
+                    'accent' => 'from-[#CFE1D7] to-[#EEF5F1]',
+                    'icon' => 'spark',
+                ],
+                [
+                    'title' => 'Saringan',
+                    'description' => 'Tahap evaluasi untuk memastikan pemahaman, kelancaran, dan kesiapan menuju jenjang berikutnya.',
+                    'accent' => 'from-[#E3E8D3] to-[#F7F9F0]',
+                    'icon' => 'shield',
+                ],
+                [
+                    'title' => 'Hadist Besar',
+                    'description' => 'Pendalaman kitab hadist pilihan sebagai penguatan wawasan ilmiah dan adab keilmuan santri.',
+                    'accent' => 'from-[#D9E4ED] to-[#F3F7FA]',
+                    'icon' => 'star',
+                ],
+            ];
+        @endphp
+
         <div class="mx-auto max-w-screen-2xl px-4 md:px-8">
-            <!-- text - start -->
-            <div class="mb-10 md:mb-16">
-                <h2 class="mb-4 text-center text-2xl font-bold text-gray-800 md:mb-6 lg:text-3xl">Kurikulum Kami
-                </h2>
-            </div>
-            <!-- text - end -->
+            <div class="overflow-hidden rounded-[2rem] border border-[#DDE4E2] bg-[#F8FAF8] shadow-xl/10">
+                <div class="relative px-6 py-10 md:px-10 md:py-12">
+                    <div class="absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top_right,_rgba(51,75,73,0.14),_transparent_48%),radial-gradient(circle_at_top_left,_rgba(150,177,173,0.18),_transparent_38%)]"></div>
 
-            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5 xl:gap-10">
-                <!-- feature - start -->
-                <div class="flex flex-col items-center bg-white rounded-xl shadow-xl/30 p-4">
-                    <div
-                        class="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-500 text-white shadow-lg md:h-14 md:w-14 md:rounded-xl">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                        </svg>
+                    <div class="relative mb-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                        <div class="max-w-2xl">
+                            <span class="inline-flex items-center rounded-full bg-[#DDE4E2] px-4 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-[#334B49]">
+                                Program Pembelajaran
+                            </span>
+                            <h2 class="mt-4 text-3xl font-bold text-[#334B49] md:text-4xl">Kurikulum Kami</h2>
+                            <p class="mt-3 text-sm leading-7 text-[#5C716F] md:text-base">
+                                Kurikulum PPM dirancang bertahap, terarah, dan adaptif untuk membantu santri berkembang
+                                dari kemampuan dasar hingga pendalaman materi inti.
+                            </p>
+                        </div>
+
+                        <div class="rounded-3xl border border-white/70 bg-white/80 px-5 py-4 shadow-lg shadow-[#334B49]/8 backdrop-blur">
+                            <div class="text-sm font-semibold text-[#334B49]">Alur Pembinaan</div>
+                            <div class="mt-2 text-sm text-[#5C716F]">Dasar bacaan, penguatan ritme belajar, evaluasi, hingga pendalaman hadist.</div>
+                        </div>
                     </div>
 
-                    <h3 class="mb-2 text-center text-lg font-semibold md:text-xl">Pegon Bacaan</h3>
-                </div>
-                <!-- feature - end -->
+                    <div class="relative grid gap-5 md:grid-cols-2 xl:grid-cols-5">
+                        @foreach ($curriculumItems as $item)
+                            <article class="group flex h-full flex-col rounded-[1.75rem] border border-white/70 bg-white p-5 shadow-lg shadow-[#334B49]/8 transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#334B49]/12">
+                                <div class="flex items-start justify-between gap-4">
+                                    <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br {{ $item['accent'] }} text-[#334B49] shadow-inner shadow-white/80">
+                                        @switch($item['icon'])
+                                            @case('book')
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 17A2.5 2.5 0 0 0 4 19.5m2.5-2.5H20V5H6.5A2.5 2.5 0 0 0 4 7.5v12" />
+                                                </svg>
+                                                @break
+                                            @case('layers')
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4 4 8l8 4 8-4-8-4Zm0 8-8 4 8 4 8-4-8-4Z" />
+                                                </svg>
+                                                @break
+                                            @case('spark')
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 3 4 14h6l-1 7 9-11h-6l1-7Z" />
+                                                </svg>
+                                                @break
+                                            @case('shield')
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3c2.6 2 5.8 3 9 3v6c0 5-3.4 8.8-9 10-5.6-1.2-9-5-9-10V6c3.2 0 6.4-1 9-3Z" />
+                                                </svg>
+                                                @break
+                                            @default
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m12 3 2.2 4.7 5.1.7-3.7 3.7.9 5.1-4.5-2.5-4.5 2.5.9-5.1-3.7-3.7 5.1-.7L12 3Z" />
+                                                </svg>
+                                        @endswitch
+                                    </div>
 
-                <!-- feature - start -->
-                <div class="flex flex-col items-center bg-white rounded-xl shadow-xl/30 p-4">
-                    <div
-                        class="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-500 text-white shadow-lg md:h-14 md:w-14 md:rounded-xl">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
+                                    <span class="rounded-full bg-[#F3F6F5] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E8481]">
+                                        Materi
+                                    </span>
+                                </div>
+
+                                <div class="mt-6 flex-1">
+                                    <h3 class="text-xl font-semibold text-[#334B49]">{{ $item['title'] }}</h3>
+                                    <p class="mt-3 text-sm leading-7 text-[#5C716F]">{{ $item['description'] }}</p>
+                                </div>
+
+                                <div class="mt-6 h-px w-full bg-gradient-to-r {{ $item['accent'] }}"></div>
+                            </article>
+                        @endforeach
                     </div>
-
-                    <h3 class="mb-2 text-center text-lg font-semibold md:text-xl">Lambatan</h3>
                 </div>
-                <!-- feature - end -->
-
-                <!-- feature - start -->
-                <div class="flex flex-col items-center bg-white rounded-xl shadow-xl/30 p-4">
-                    <div
-                        class="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-500 text-white shadow-lg md:h-14 md:w-14 md:rounded-xl">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
-                        </svg>
-                    </div>
-
-                    <h3 class="mb-2 text-center text-lg font-semibold md:text-xl">Cepatan</h3>
-                </div>
-                <!-- feature - end -->
-
-                <!-- feature - start -->
-                <div class="flex flex-col items-center bg-white rounded-xl shadow-xl/30 p-4">
-                    <div
-                        class="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-500 text-white shadow-lg md:h-14 md:w-14 md:rounded-xl">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                    </div>
-
-                    <h3 class="mb-2 text-center text-lg font-semibold md:text-xl">Saringan</h3>
-                </div>
-                <!-- feature - end -->
-
-                <!-- feature - start -->
-                <div class="flex flex-col items-center bg-white rounded-xl shadow-xl/30 p-4">
-                    <div
-                        class="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-500 text-white shadow-lg md:h-14 md:w-14 md:rounded-xl">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                    </div>
-
-                    <h3 class="mb-2 text-center text-lg font-semibold md:text-xl">Hadist Besar</h3>
-                </div>
-                <!-- feature - end -->
             </div>
         </div>
     </section>
@@ -456,11 +575,21 @@
     <!-- Kegiatan Belajar Mengajar -->
     <section id="kegiatan" class="bg-white py-6 sm:py-8 lg:py-12 scroll-mt-24">
         <div class="mx-auto max-w-screen-2xl px-4 md:px-8">
-            <!-- text - start -->
-            <div class="mb-10 md:mb-16">
-                <h2 class="mb-4 text-center text-2xl font-bold text-gray-800 md:mb-6 lg:text-3xl">Kegiatan Belajar Mengajar</h2>
+            <div class="mb-10 flex flex-col gap-4 md:mb-14 lg:flex-row lg:items-end lg:justify-between">
+                <div class="max-w-2xl">
+                    <span class="inline-flex items-center rounded-full bg-[#DDE4E2] px-4 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-[#334B49]">
+                        Kabar PPM
+                    </span>
+                    <h2 class="mt-4 text-2xl font-bold text-[#334B49] md:text-3xl lg:text-4xl">Kegiatan Belajar Mengajar</h2>
+                    <p class="mt-3 text-sm leading-7 text-[#5C716F] md:text-base">
+                        Dokumentasi kegiatan, pembinaan, dan dinamika belajar santri yang berlangsung di lingkungan PPM.
+                    </p>
+                </div>
+
+                <div class="rounded-3xl border border-[#DDE4E2] bg-[#F8FAF8] px-5 py-4 text-sm text-[#5C716F] shadow-lg shadow-[#334B49]/6">
+                    Update terbaru seputar aktivitas santri dan program pembelajaran.
+                </div>
             </div>
-            <!-- text - end -->
 
             <div class="grid gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4 xl:gap-8">
                 @forelse ($beritaItems as $news)
@@ -472,46 +601,57 @@
                         $authorInitial = \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($authorName, 0, 1));
                         $excerpt = \Illuminate\Support\Str::limit(strip_tags($news->content ?? ''), 140);
                     @endphp
-                    <article class="flex flex-col overflow-hidden rounded-lg border bg-white">
-                        <a href="#" class="group relative block h-48 overflow-hidden bg-gray-100 md:h-64">
+                    <article class="group flex flex-col overflow-hidden rounded-[1.75rem] border border-[#E4EBE8] bg-white shadow-lg shadow-[#334B49]/8 transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#334B49]/12">
+                        <a href="#" class="relative block h-52 overflow-hidden bg-[#E8EFED] md:h-64">
                             <img src="{{ $news->image_url ? asset('storage/' . $news->image_url) : asset('images/assets/hero.png') }}" loading="lazy" alt="{{ $news->title }}"
-                                class="absolute inset-0 h-full w-full object-cover object-center transition duration-200 group-hover:scale-110" />
+                                class="absolute inset-0 h-full w-full object-cover object-center transition duration-500 group-hover:scale-105" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-[#233533]/65 via-[#233533]/10 to-transparent"></div>
+                            <div class="absolute left-4 top-4">
+                                <span class="rounded-full bg-white/85 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#334B49] backdrop-blur">
+                                    Berita
+                                </span>
+                            </div>
+                            @if ($publishedAt)
+                                <div class="absolute bottom-4 left-4 rounded-2xl bg-white/14 px-3 py-2 text-xs font-medium text-white backdrop-blur">
+                                    {{ $publishedAt->format('d M Y') }}
+                                </div>
+                            @endif
                         </a>
 
-                        <div class="flex flex-1 flex-col p-4 sm:p-6">
-                            <h3 class="mb-2 text-lg font-semibold text-gray-800">
-                                <a href="#" class="transition duration-100 hover:text-[#334B49]">
+                        <div class="flex flex-1 flex-col p-5 sm:p-6">
+                            <h3 class="text-lg font-semibold leading-snug text-[#334B49]">
+                                <a href="#" class="transition duration-100 group-hover:text-[#496764]">
                                     {{ $news->title }}
                                 </a>
                             </h3>
 
                             @if ($excerpt)
-                                <p class="mb-8 text-gray-500">{{ $excerpt }}</p>
+                                <p class="mt-3 text-sm leading-7 text-[#5C716F]">{{ $excerpt }}</p>
                             @endif
 
-                            <div class="mt-auto flex items-end justify-between">
-                                <div class="flex items-center gap-2">
-                                    <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#DDE4E2] text-sm font-semibold text-[#334B49]">
+                            <div class="mt-6 h-px w-full bg-gradient-to-r from-[#DDE4E2] via-[#EEF3F1] to-transparent"></div>
+
+                            <div class="mt-5 flex items-center justify-between gap-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#DDE4E2] text-sm font-semibold text-[#334B49] shadow-inner shadow-white">
                                         {{ $authorInitial }}
                                     </div>
 
                                     <div>
-                                        <span class="block text-[#334B49]">{{ $authorName }}</span>
-                                        @if ($publishedAt)
-                                            <span class="block text-sm text-gray-400">{{ $publishedAt->format('d F Y') }}</span>
-                                        @endif
+                                        <span class="block text-sm font-semibold text-[#334B49]">{{ $authorName }}</span>
+                                        <span class="block text-xs uppercase tracking-[0.18em] text-[#7A908D]">Penulis</span>
                                     </div>
                                 </div>
 
-                                <span class="rounded border px-2 py-1 text-sm text-gray-500">Berita</span>
+                                <span class="rounded-full bg-[#F3F6F5] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E8481]">
+                                    Kegiatan
+                                </span>
                             </div>
                         </div>
                     </article>
                 @empty
                     <p class="text-sm text-gray-600">Belum ada berita kegiatan terbaru.</p>
                 @endforelse
-            </div>
-
             </div>
         </div>
     </section>
@@ -538,20 +678,56 @@
 
     <!-- Sign Up -->
     <section id="signup" class="bg-white py-6 sm:py-8 lg:py-12 scroll-mt-24">
-        <div class="mx-auto max-w-screen-md px-4 md:px-8">
-            <div class="rounded-2xl bg-[#334B49] px-6 py-10 text-center text-white shadow-xl/30 md:px-12">
-                <h2 class="text-2xl font-bold md:text-3xl">Dapatkan Informasi Terbaru</h2>
-                <p class="mt-3 text-white/80 md:text-lg">Daftarkan alamat email Anda untuk menerima kabar kegiatan dan pendaftaran terbaru.</p>
-                <form class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-stretch" aria-label="Formulir sign up">
-                    <label class="sr-only" for="signup-email">Alamat Email</label>
-                    <input id="signup-email" type="email" name="signup_email"
-                        class="w-full rounded-lg border border-white/40 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-white/60 focus:border-white focus:outline-none focus:ring-2 focus:ring-white/60"
-                        placeholder="Email Anda" required>
-                    <button type="submit"
-                        class="inline-flex items-center justify-center rounded-lg bg-white px-6 py-3 text-sm font-semibold text-[#334B49] transition hover:bg-gray-100">Sign
-                        Up</button>
-                </form>
-                <p class="mt-3 text-xs text-white/60">Kami menghargai privasi Anda. Anda dapat berhenti berlangganan kapan saja.</p>
+        <div class="mx-auto max-w-screen-xl px-4 md:px-8">
+            <div class="overflow-hidden rounded-[2.5rem] border border-[#DDE4E2] bg-[#F8FAF8] shadow-xl/10">
+                <div class="relative px-6 py-8 md:px-8 md:py-10">
+                    <div class="absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top_left,_rgba(150,177,173,0.18),_transparent_42%),radial-gradient(circle_at_top_right,_rgba(51,75,73,0.14),_transparent_36%)]"></div>
+
+                    <div class="relative grid gap-6 lg:grid-cols-[1fr_0.9fr] lg:items-center">
+                        <div class="rounded-[2rem] bg-[#334B49] px-6 py-8 text-white shadow-2xl shadow-[#334B49]/20 md:px-8 md:py-10">
+                            <span class="inline-flex items-center rounded-full bg-white/14 px-4 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-white/85">
+                                Newsletter PPM
+                            </span>
+                            <h2 class="mt-4 text-3xl font-bold leading-tight md:text-4xl">Dapatkan Informasi Terbaru</h2>
+                            <p class="mt-4 max-w-2xl text-sm leading-7 text-white/80 md:text-base">
+                                Daftarkan alamat email Anda untuk menerima kabar kegiatan, informasi pembinaan, dan pembaruan pendaftaran terbaru dari PPM.
+                            </p>
+
+                            <form class="mt-8 flex flex-col gap-3 lg:flex-row lg:items-stretch" aria-label="Formulir sign up">
+                                <label class="sr-only" for="signup-email">Alamat Email</label>
+                                <input id="signup-email" type="email" name="signup_email"
+                                    class="w-full rounded-2xl border border-white/20 bg-white/10 px-5 py-4 text-sm text-white placeholder:text-white/55 focus:border-white focus:outline-none focus:ring-2 focus:ring-white/40"
+                                    placeholder="Masukkan email aktif Anda" required>
+                                <button type="submit"
+                                    class="inline-flex min-w-36 items-center justify-center rounded-2xl bg-white px-6 py-4 text-sm font-semibold text-[#334B49] shadow-lg transition hover:bg-[#F3F6F5]">
+                                    Sign Up
+                                </button>
+                            </form>
+
+                            <p class="mt-4 text-xs leading-6 text-white/60">
+                                Kami menghargai privasi Anda. Anda dapat berhenti berlangganan kapan saja.
+                            </p>
+                        </div>
+
+                        <div class="rounded-[2rem] border border-white/80 bg-white/92 p-6 shadow-lg shadow-[#334B49]/8 md:p-8">
+                            <div class="text-sm font-semibold uppercase tracking-[0.22em] text-[#7A908D]">Manfaat Berlangganan</div>
+                            <div class="mt-6 space-y-4">
+                                <div class="rounded-2xl bg-[#F3F6F5] p-4">
+                                    <div class="text-base font-semibold text-[#334B49]">Info kegiatan terbaru</div>
+                                    <p class="mt-2 text-sm leading-7 text-[#5C716F]">Terima pembaruan kegiatan belajar, agenda santri, dan momen penting PPM secara berkala.</p>
+                                </div>
+                                <div class="rounded-2xl bg-[#F8FAF8] p-4">
+                                    <div class="text-base font-semibold text-[#334B49]">Pembaruan pendaftaran</div>
+                                    <p class="mt-2 text-sm leading-7 text-[#5C716F]">Dapatkan kabar lebih cepat saat ada informasi penting seputar pendaftaran santri.</p>
+                                </div>
+                                <div class="rounded-2xl bg-[#F3F6F5] p-4">
+                                    <div class="text-base font-semibold text-[#334B49]">Komunikasi lebih mudah</div>
+                                    <p class="mt-2 text-sm leading-7 text-[#5C716F]">Tetap terhubung dengan informasi resmi tanpa perlu memantau situs setiap saat.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>

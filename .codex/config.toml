@@ -2,3 +2,6 @@
 command = "php"
 args = ["artisan", "boost:mcp"]
 cwd = "D:\\Personal\\Project\\ppm"
+
+[mcp_servers.laravel-boost.tools.search-docs]
+approval_mode = "approve"
