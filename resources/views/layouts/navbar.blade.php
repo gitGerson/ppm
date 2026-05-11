@@ -23,17 +23,9 @@
             ],
         ];
     @endphp
-    <!-- Top curtain strip -->
-    <div class="absolute inset-x-0 top-0 h-16 z-0 pointer-events-none">
-        <div class="absolute inset-0"
-            style="background-image: url('{{ asset('images/assets/curtain.svg') }}'); background-repeat: x-repeat; background-size: auto 115%; background-position: top left;"></div>
-        </div>
-    </div>
-
-    <!-- Nav content (pushed down by padding-top equal to curtain height) -->
-    <div class="max-w-screen-xl relative z-10 flex flex-wrap items-center justify-between mx-auto pt-1 pb-2">
+    <div class="max-w-screen-xl relative flex flex-wrap items-center justify-between mx-auto py-2">
         <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
-            <img src="{{ asset('images/assets/logo3.png') }}" class="h-32 hidden sm:block" alt="Logo" />
+            <img src="{{ asset('images/assets/logo3.png') }}" class="h-20 hidden sm:block lg:h-24" alt="Logo" />
         </a>
 
         <button data-collapse-toggle="navbar-default" type="button"

@@ -2,23 +2,43 @@
 
 namespace Database\Seeders;
 
+use App\Models\DetailPemesanan;
+use App\Models\Item;
 use App\Models\Pemesanan;
-use Faker\Factory as FakerFactory;
 use Illuminate\Database\Seeder;
 
 class PemesananSeeder extends Seeder
 {
     public function run(): void
     {
-        $faker = FakerFactory::create('id_ID');
+        $items = Item::query()->get();
 
-        for ($i = 0; $i < 10; $i++) {
-            Pemesanan::create([
-                'order_date' => $faker->dateTimeBetween('-1 years', 'now')->format('Y-m-d'),
-                'address' => str_replace("\n", ', ', $faker->address()),
-                'nama' => $faker->name(),
-                'total_amount' => $faker->numberBetween(150000, 7500000),
-            ]);
+        if ($items->isEmpty()) {
+            $items = Item::factory()->count(15)->create();
         }
+
+        Pemesanan::factory()
+            ->count(12)
+            ->create()
+            ->each(function (Pemesanan $pemesanan) use ($items): void {
+                $selectedItems = $items->random(rand(1, min(4, $items->count())));
+                $totalAmount = 0;
+
+                foreach ($selectedItems as $item) {
+                    $detail = DetailPemesanan::factory()
+                        ->for($pemesanan)
+                        ->for($item)
+                        ->state([
+                            'quantity' => fake()->numberBetween(1, 3),
+                        ])
+                        ->create();
+
+                    $totalAmount += $detail->total_amount;
+                }
+
+                $pemesanan->update([
+                    'total_amount' => $totalAmount,
+                ]);
+            });
     }
 }

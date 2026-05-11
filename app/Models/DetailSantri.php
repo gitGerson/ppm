@@ -2,10 +2,16 @@
 
 namespace App\Models;
 
+use Database\Factories\DetailSantriFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DetailSantri extends Model
 {
+    /** @use HasFactory<DetailSantriFactory> */
+    use HasFactory;
+
     protected $table = 'detail_santris';
 
     protected $fillable = [
@@ -73,7 +79,7 @@ class DetailSantri extends Model
         'is_ibu_alive',
     ];
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }

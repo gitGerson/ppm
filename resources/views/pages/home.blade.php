@@ -474,7 +474,7 @@
                     @endphp
                     <article class="flex flex-col overflow-hidden rounded-lg border bg-white">
                         <a href="#" class="group relative block h-48 overflow-hidden bg-gray-100 md:h-64">
-                            <img src="{{ asset('storage/' . $news->image_url) ?: asset('images/assets/hero.png') }}" loading="lazy" alt="{{ $news->title }}"
+                            <img src="{{ $news->image_url ? asset('storage/' . $news->image_url) : asset('images/assets/hero.png') }}" loading="lazy" alt="{{ $news->title }}"
                                 class="absolute inset-0 h-full w-full object-cover object-center transition duration-200 group-hover:scale-110" />
                         </a>
 
@@ -629,4 +629,3 @@
     </script>
 
 @endsection
-
