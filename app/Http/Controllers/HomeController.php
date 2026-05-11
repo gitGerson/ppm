@@ -179,10 +179,11 @@ class HomeController extends Controller
             'status_pip' => ['nullable', Rule::in(['Tidak Memiliki', 'Memiliki'])],
             'golongan_darah' => ['nullable', 'string', 'max:3'],
             'riwayat_penyakit' => ['nullable', 'string', 'max:255'],
-            'ijazah_terakhir' => ['nullable', 'string', 'max:255'],
+            'ijazah_terakhir' => ['nullable', Rule::in(['SD', 'SMP', 'SMA'])],
             'is_mondok' => ['nullable', 'boolean'],
             'nama_sekolah_asal' => ['nullable', 'string', 'max:255'],
-            'khatam' => ['nullable', Rule::in(['Bukhori', 'Nasai', 'Muslim', 'Tirmidzi', 'Abu Daud', 'Ibnu Majah'])],
+            'khatam' => ['nullable', 'array'],
+            'khatam.*' => ['required', Rule::in(['Tidak Ada', 'Bukhori', 'Nasai', 'Muslim', 'Tirmidzi', 'Abu Daud', 'Ibnu Majah'])],
             'prodi_sekolah_asal' => ['nullable', 'string', 'max:255'],
             'tahun_masuk_sekolah' => ['nullable', 'integer', 'min:1900', 'max:'.$yearUpperBound],
             'tahun_masuk_ppm' => ['nullable', 'integer', 'min:1900', 'max:'.$yearUpperBound],
@@ -200,7 +201,7 @@ class HomeController extends Controller
             'is_motor' => ['nullable', 'boolean'],
             'is_sepeda' => ['nullable', 'boolean'],
             'is_laptop' => ['nullable', 'boolean'],
-            'sim' => ['nullable', Rule::in(['Memiliki', 'Tidak Memiliki'])],
+            'sim' => ['nullable', Rule::in(['SIM A', 'SIM C', 'Tidak Punya'])],
             'image_ktp_path' => ['nullable', 'image', 'max:4096'],
             'image_pasfoto_path' => ['nullable', 'image', 'max:4096'],
             'no_kk' => ['nullable', 'string', 'max:16'],
@@ -256,6 +257,17 @@ class HomeController extends Controller
                     ? $request->boolean($booleanField)
                     : null;
             }
+        }
+
+        if (array_key_exists('khatam', $validated)) {
+            $validated['khatam'] = collect($validated['khatam'])
+                ->filter()
+                ->when(
+                    in_array('Tidak Ada', $validated['khatam'], true),
+                    fn ($collection) => collect(['Tidak Ada'])
+                )
+                ->unique()
+                ->implode(', ');
         }
 
         if (array_key_exists('image_ktp_path', $validated) && $validated['image_ktp_path'] instanceof UploadedFile) {

@@ -17,6 +17,23 @@
         $textareaClass = $inputClass . ' min-h-[140px] resize-y';
         $labelClass = 'text-sm font-medium text-slate-700';
         $stringValue = fn (string $name, $fallback = null) => old($name, optional($detail)->getAttribute($name) ?? $fallback);
+        $arrayValue = function (string $name) use ($detail) {
+            $value = old($name, optional($detail)->getAttribute($name));
+
+            if (is_array($value)) {
+                return $value;
+            }
+
+            if (blank($value)) {
+                return [];
+            }
+
+            return collect(explode(',', (string) $value))
+                ->map(fn ($item) => trim($item))
+                ->filter()
+                ->values()
+                ->all();
+        };
         $booleanValue = function (string $name) use ($detail) {
             $value = old($name, optional($detail)->getAttribute($name));
             if ($value === null || $value === '') {
@@ -203,13 +220,21 @@
                         <section data-step="2" class="hidden space-y-8">
                             @php
                                 $isMondok = $booleanValue('is_mondok');
-                                $khatam = $stringValue('khatam');
+                                $khatam = $arrayValue('khatam');
+                                $ijazahTerakhir = $stringValue('ijazah_terakhir');
                             @endphp
                             <div class="rounded-3xl bg-slate-50 p-6 shadow-inner">
                                 <div class="grid gap-6 md:grid-cols-2">
                                     <div>
                                         <label for="ijazah_terakhir" class="{{ $labelClass }}">Ijazah Terakhir</label>
-                                        <input type="text" id="ijazah_terakhir" name="ijazah_terakhir" value="{{ $stringValue('ijazah_terakhir') }}" class="{{ $inputClass }}">
+                                        <select id="ijazah_terakhir" name="ijazah_terakhir" class="{{ $inputClass }}">
+                                            <option value="">Pilih jenjang terakhir</option>
+                                            @foreach (['SD', 'SMP', 'SMA'] as $option)
+                                                <option value="{{ $option }}" {{ $ijazahTerakhir === $option ? 'selected' : '' }}>
+                                                    {{ $option }}
+                                                </option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                     <div>
                                         <label for="nama_sekolah_asal" class="{{ $labelClass }}">Sekolah / Universitas</label>
@@ -243,9 +268,9 @@
                                     <div class="md:col-span-2">
                                         <span class="{{ $labelClass }}">Khatam Hadist Besar</span>
                                         <div class="mt-3 grid gap-3 md:grid-cols-3">
-                                            @foreach (['Bukhori', 'Nasai', 'Muslim', 'Tirmidzi', 'Abu Daud', 'Ibnu Majah'] as $option)
+                                            @foreach (['Tidak Ada', 'Bukhori', 'Nasai', 'Muslim', 'Tirmidzi', 'Abu Daud', 'Ibnu Majah'] as $option)
                                                 <label class="flex items-center gap-2 rounded-full border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:border-emerald-500 hover:text-emerald-600">
-                                                    <input type="radio" name="khatam" value="{{ $option }}" class="h-4 w-4 text-emerald-600 focus:ring-emerald-500" {{ $khatam === $option ? 'checked' : '' }}>
+                                                    <input type="checkbox" name="khatam[]" value="{{ $option }}" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" {{ in_array($option, $khatam, true) ? 'checked' : '' }}>
                                                     <span>{{ $option }}</span>
                                                 </label>
                                             @endforeach
@@ -357,7 +382,7 @@
                                         <label for="sim" class="{{ $labelClass }}">Kepemilikan SIM</label>
                                         <select id="sim" name="sim" class="{{ $inputClass }}">
                                             <option value="">Pilih salah satu</option>
-                                            @foreach (['Memiliki', 'Tidak Memiliki'] as $option)
+                                            @foreach (['SIM A', 'SIM C', 'Tidak Punya'] as $option)
                                                 <option value="{{ $option }}" {{ $simStatus === $option ? 'selected' : '' }}>
                                                     {{ $option }}
                                                 </option>
@@ -435,7 +460,7 @@
                                         <input type="number" id="penghasilan_ayah" name="penghasilan_ayah" value="{{ $stringValue('penghasilan_ayah') }}" min="0" class="{{ $inputClass }}">
                                     </div>
                                     <div>
-                                        <label for="no_hp_ayah" class="{{ $labelClass }}">No HP Ayah</label>
+                                        <label for="no_hp_ayah" class="{{ $labelClass }}">No HP Ayah (Aktif / WhatsApp)</label>
                                         <input type="text" id="no_hp_ayah" name="no_hp_ayah" value="{{ $stringValue('no_hp_ayah') }}" class="{{ $inputClass }}">
                                     </div>
                                     <div class="md:col-span-2">
@@ -490,7 +515,7 @@
                                         <input type="number" id="penghasilan_ibu" name="penghasilan_ibu" value="{{ $stringValue('penghasilan_ibu') }}" min="0" class="{{ $inputClass }}">
                                     </div>
                                     <div>
-                                        <label for="no_hp_ibu" class="{{ $labelClass }}">No HP Ibu</label>
+                                        <label for="no_hp_ibu" class="{{ $labelClass }}">No HP Ibu (Aktif / WhatsApp)</label>
                                         <input type="text" id="no_hp_ibu" name="no_hp_ibu" value="{{ $stringValue('no_hp_ibu') }}" class="{{ $inputClass }}">
                                     </div>
                                     <div class="md:col-span-2">
