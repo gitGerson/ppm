@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Pemesanans\Tables;
 
+use App\Models\Pemesanan;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -35,11 +37,27 @@ class PemesanansTable
                     ->label('Total')
                     ->formatStateUsing(fn ($state): string => 'Rp '.number_format((int) $state, 0, ',', '.'))
                     ->sortable(),
+                TextColumn::make('payment_status')
+                    ->label('Status Pembayaran')
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state): string => $state === 'lunas' ? 'Lunas' : 'Belum Lunas')
+                    ->color(fn (?string $state): string => $state === 'lunas' ? 'success' : 'warning')
+                    ->sortable(),
             ])
             ->filters([
                 //
             ])
             ->recordActions([
+                Action::make('markAsPaid')
+                    ->label('Konfirmasi Lunas')
+                    ->icon('heroicon-m-check-circle')
+                    ->color('success')
+                    ->visible(fn (Pemesanan $record): bool => $record->payment_status !== 'lunas')
+                    ->action(function (Pemesanan $record): void {
+                        $record->update([
+                            'payment_status' => 'lunas',
+                        ]);
+                    }),
                 ViewAction::make(),
                 EditAction::make(),
             ])

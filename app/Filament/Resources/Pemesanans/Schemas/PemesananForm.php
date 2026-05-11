@@ -41,6 +41,14 @@ class PemesananForm
                             ->readOnly()
                             ->prefix('Rp')
                             ->default(0),
+                        Select::make('payment_status')
+                            ->label('Status Pembayaran')
+                            ->options([
+                                'belum_lunas' => 'Belum Lunas',
+                                'lunas' => 'Lunas',
+                            ])
+                            ->default('belum_lunas')
+                            ->required(),
                     ]),
                 Section::make('Detail Item')
                     ->columnSpanFull()

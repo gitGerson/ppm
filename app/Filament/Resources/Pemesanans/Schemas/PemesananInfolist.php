@@ -28,6 +28,11 @@ class PemesananInfolist
                         TextEntry::make('total_amount')
                             ->label('Total Pemesanan')
                             ->formatStateUsing(fn ($state): string => 'Rp '.number_format((int) $state, 0, ',', '.')),
+                        TextEntry::make('payment_status')
+                            ->label('Status Pembayaran')
+                            ->badge()
+                            ->formatStateUsing(fn (?string $state): string => $state === 'lunas' ? 'Lunas' : 'Belum Lunas')
+                            ->color(fn (?string $state): string => $state === 'lunas' ? 'success' : 'warning'),
                     ]),
                 Section::make('Detail Item')
                     ->schema([

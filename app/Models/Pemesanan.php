@@ -17,7 +17,15 @@ class Pemesanan extends Model
         'address',
         'total_amount',
         'nama',
+        'payment_status',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'order_date' => 'date',
+        ];
+    }
 
     public function detailPemesanans(): HasMany
     {

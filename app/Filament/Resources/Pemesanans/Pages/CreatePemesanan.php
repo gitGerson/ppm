@@ -13,6 +13,7 @@ class CreatePemesanan extends CreateRecord
     {
         $data['total_amount'] = collect($data['detailPemesanans'] ?? [])
             ->sum(fn (array $detail): int => (int) ($detail['total_amount'] ?? 0));
+        $data['payment_status'] = $data['payment_status'] ?? 'belum_lunas';
 
         return $data;
     }
