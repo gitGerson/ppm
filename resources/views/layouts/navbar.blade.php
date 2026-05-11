@@ -2,7 +2,9 @@
     @php
         $isHome = request()->routeIs('home');
         $homeUrl = route('home');
-        $baseLinkClasses = 'block py-2 px-3 text-black rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-black md:p-0';
+        $baseLinkClasses = 'group relative block px-3 py-2 text-sm font-semibold tracking-[0.01em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7FA08F]/40';
+        $inactiveLinkClasses = 'text-slate-700 hover:text-[#23413C]';
+        $activeLinkClasses = 'text-[#23413C]';
         $homeSectionItems = [
             ['label' => 'Home', 'target' => 'home'],
             ['label' => 'Struktur', 'target' => 'struktur'],
@@ -40,39 +42,105 @@
         </button>
 
         <div class="hidden w-full md:block md:w-auto" id="navbar-default">
-            <ul class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50
-                 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-transparent">
+            <ul class="mt-4 flex flex-col rounded-2xl border border-[#D9E6DE] bg-white/95 p-3 shadow-[0_18px_44px_-30px_rgba(28,50,45,0.45)]
+                 md:mt-0 md:flex-row md:items-center md:gap-2 md:rounded-none md:border-0 md:bg-transparent md:p-0 md:shadow-none rtl:space-x-reverse">
                 @foreach ($homeSectionItems as $item)
                     @php
                         $target = $item['target'];
                         $href = $isHome ? "#{$target}" : "{$homeUrl}#{$target}";
-                        $classes = $baseLinkClasses;
                         $isInitialActive = $isHome && $target === 'home';
-                        if ($isInitialActive) {
-                            $classes .= ' underline';
-                        }
+                        $classes = $baseLinkClasses . ' ' . ($isInitialActive ? $activeLinkClasses : $inactiveLinkClasses);
                     @endphp
                     <li>
                         <a href="{{ $href }}"
                            class="{{ $classes }}"
+                           data-nav-link
                            @if($isHome) data-scroll-target="{{ $target }}" @endif
-                           @if($isInitialActive) aria-current="page" @endif>{{ $item['label'] }}</a>
+                           @if($isInitialActive) aria-current="page" @endif>
+                            <span>{{ $item['label'] }}</span>
+                            <span aria-hidden="true"
+                                class="pointer-events-none absolute inset-x-3 -bottom-0.5 h-0.5 origin-left scale-x-0 rounded-full bg-[#23413C] transition-transform duration-200 group-hover:scale-x-100 group-[aria-current=page]:scale-x-100"></span>
+                        </a>
                     </li>
                 @endforeach
                 @foreach ($routeItems as $item)
                     @php
-                        $classes = $baseLinkClasses;
-                        if ($item['active']) {
-                            $classes .= ' underline';
-                        }
+                        $classes = $baseLinkClasses . ' ' . ($item['active'] ? $activeLinkClasses : $inactiveLinkClasses);
                     @endphp
                     <li>
                         <a href="{{ $item['url'] }}"
                            class="{{ $classes }}"
-                           @if($item['active']) aria-current="page" @endif>{{ $item['label'] }}</a>
+                           data-nav-link
+                           @if($item['active']) aria-current="page" @endif>
+                            <span>{{ $item['label'] }}</span>
+                            <span aria-hidden="true"
+                                class="pointer-events-none absolute inset-x-3 -bottom-0.5 h-0.5 origin-left scale-x-0 rounded-full bg-[#23413C] transition-transform duration-200 group-hover:scale-x-100 group-[aria-current=page]:scale-x-100"></span>
+                        </a>
                     </li>
                 @endforeach
             </ul>
         </div>
     </div>
 </nav>
+
+@if ($isHome)
+    @once
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const activeClasses = ['text-[#23413C]'];
+                const inactiveClasses = ['text-slate-700', 'hover:text-[#23413C]'];
+                const navLinks = Array.from(document.querySelectorAll('[data-scroll-target]'));
+
+                if (!navLinks.length || !('IntersectionObserver' in window)) {
+                    return;
+                }
+
+                const sections = navLinks
+                    .map((link) => {
+                        const sectionId = link.getAttribute('data-scroll-target');
+
+                        return {
+                            link,
+                            section: document.getElementById(sectionId),
+                        };
+                    })
+                    .filter((item) => item.section);
+
+                if (!sections.length) {
+                    return;
+                }
+
+                const setActiveLink = (activeId) => {
+                    sections.forEach(({ link, section }) => {
+                        const isActive = section.id === activeId;
+
+                        link.classList.toggle(activeClasses[0], isActive);
+                        link.classList.toggle(inactiveClasses[0], !isActive);
+                        link.classList.toggle(inactiveClasses[1], !isActive);
+
+                        if (isActive) {
+                            link.setAttribute('aria-current', 'page');
+                        } else {
+                            link.removeAttribute('aria-current');
+                        }
+                    });
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    const visibleEntries = entries
+                        .filter((entry) => entry.isIntersecting)
+                        .sort((firstEntry, secondEntry) => secondEntry.intersectionRatio - firstEntry.intersectionRatio);
+
+                    if (visibleEntries.length) {
+                        setActiveLink(visibleEntries[0].target.id);
+                    }
+                }, {
+                    rootMargin: '-30% 0px -45% 0px',
+                    threshold: [0.2, 0.35, 0.5, 0.65],
+                });
+
+                sections.forEach(({ section }) => observer.observe(section));
+            });
+        </script>
+    @endonce
+@endif
