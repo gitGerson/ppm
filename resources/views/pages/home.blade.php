@@ -461,41 +461,6 @@
 
     <!-- Kurikulum -->
     <section id="kurikulum" class="bg-white py-10 sm:py-12 lg:py-16 scroll-mt-24">
-        @php
-            $curriculumItems = [
-                [
-                    'title' => 'Pegon Bacaan',
-                    'description' => 'Pembiasaan membaca teks pegon untuk memperkuat dasar kitab dan ketelitian lafaz.',
-                    'accent' => 'from-[#DDE4E2] to-[#F5F7F6]',
-                    'icon' => 'book',
-                ],
-                [
-                    'title' => 'Lambatan',
-                    'description' => 'Kelas bertahap dengan pendampingan intensif agar santri membangun pemahaman dari fondasi.',
-                    'accent' => 'from-[#E8DCC8] to-[#F7F2EA]',
-                    'icon' => 'layers',
-                ],
-                [
-                    'title' => 'Cepatan',
-                    'description' => 'Jalur percepatan untuk santri yang siap menempuh materi lebih padat dan ritme lebih tinggi.',
-                    'accent' => 'from-[#CFE1D7] to-[#EEF5F1]',
-                    'icon' => 'spark',
-                ],
-                [
-                    'title' => 'Saringan',
-                    'description' => 'Tahap evaluasi untuk memastikan pemahaman, kelancaran, dan kesiapan menuju jenjang berikutnya.',
-                    'accent' => 'from-[#E3E8D3] to-[#F7F9F0]',
-                    'icon' => 'shield',
-                ],
-                [
-                    'title' => 'Hadist Besar',
-                    'description' => 'Pendalaman kitab hadist pilihan sebagai penguatan wawasan ilmiah dan adab keilmuan santri.',
-                    'accent' => 'from-[#D9E4ED] to-[#F3F7FA]',
-                    'icon' => 'star',
-                ],
-            ];
-        @endphp
-
         <div class="mx-auto max-w-screen-2xl px-4 md:px-8">
             <div class="overflow-hidden rounded-[2rem] border border-[#DDE4E2] bg-[#F8FAF8] shadow-xl/10">
                 <div class="relative px-6 py-10 md:px-10 md:py-12">
@@ -521,10 +486,19 @@
 
                     <div class="relative grid gap-5 md:grid-cols-2 xl:grid-cols-5">
                         @foreach ($curriculumItems as $item)
+                            @php
+                                $accent = match ($item->theme) {
+                                    'sand' => 'from-[#E8DCC8] to-[#F7F2EA]',
+                                    'mint' => 'from-[#CFE1D7] to-[#EEF5F1]',
+                                    'olive' => 'from-[#E3E8D3] to-[#F7F9F0]',
+                                    'sky' => 'from-[#D9E4ED] to-[#F3F7FA]',
+                                    default => 'from-[#DDE4E2] to-[#F5F7F6]',
+                                };
+                            @endphp
                             <article class="group flex h-full flex-col rounded-[1.75rem] border border-white/70 bg-white p-5 shadow-lg shadow-[#334B49]/8 transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#334B49]/12">
                                 <div class="flex items-start justify-between gap-4">
-                                    <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br {{ $item['accent'] }} text-[#334B49] shadow-inner shadow-white/80">
-                                        @switch($item['icon'])
+                                    <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br {{ $accent }} text-[#334B49] shadow-inner shadow-white/80">
+                                        @switch($item->icon)
                                             @case('book')
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 17A2.5 2.5 0 0 0 4 19.5m2.5-2.5H20V5H6.5A2.5 2.5 0 0 0 4 7.5v12" />
@@ -558,11 +532,11 @@
                                 </div>
 
                                 <div class="mt-6 flex-1">
-                                    <h3 class="text-xl font-semibold text-[#334B49]">{{ $item['title'] }}</h3>
-                                    <p class="mt-3 text-sm leading-7 text-[#5C716F]">{{ $item['description'] }}</p>
+                                    <h3 class="text-xl font-semibold text-[#334B49]">{{ $item->title }}</h3>
+                                    <p class="mt-3 text-sm leading-7 text-[#5C716F]">{{ $item->description }}</p>
                                 </div>
 
-                                <div class="mt-6 h-px w-full bg-gradient-to-r {{ $item['accent'] }}"></div>
+                                <div class="mt-6 h-px w-full bg-gradient-to-r {{ $accent }}"></div>
                             </article>
                         @endforeach
                     </div>

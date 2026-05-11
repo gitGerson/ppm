@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Berita;
+use App\Models\CurriculumItem;
 use App\Models\DetailSantri;
 use App\Models\Pengumuman;
 use Illuminate\Http\Request;
@@ -20,6 +21,12 @@ class HomeController extends Controller
 
     public function home()
     {
+        $curriculumItems = CurriculumItem::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
         $articles = Berita::query()
             ->where('visible', true)
             ->orderByDesc('date')
@@ -57,6 +64,7 @@ class HomeController extends Controller
         $santriDefaultMonthKey = data_get($santriMonthly->last(), 'month_key');
 
         return view('pages.home', [
+            'curriculumItems' => $curriculumItems,
             'beritaItems' => $articles,
             'santriChart' => $santriMonthly,
             'santriDefaultMonthKey' => $santriDefaultMonthKey,
@@ -176,8 +184,8 @@ class HomeController extends Controller
             'nama_sekolah_asal' => ['nullable', 'string', 'max:255'],
             'khatam' => ['nullable', Rule::in(['Bukhori', 'Nasai', 'Muslim', 'Tirmidzi', 'Abu Daud', 'Ibnu Majah'])],
             'prodi_sekolah_asal' => ['nullable', 'string', 'max:255'],
-            'tahun_masuk_sekolah' => ['nullable', 'integer', 'min:1900', 'max:' . $yearUpperBound],
-            'tahun_masuk_ppm' => ['nullable', 'integer', 'min:1900', 'max:' . $yearUpperBound],
+            'tahun_masuk_sekolah' => ['nullable', 'integer', 'min:1900', 'max:'.$yearUpperBound],
+            'tahun_masuk_ppm' => ['nullable', 'integer', 'min:1900', 'max:'.$yearUpperBound],
             'asalkelompoksambung' => ['nullable', 'string', 'max:255'],
             'desa' => ['nullable', 'string', 'max:255'],
             'alamat' => ['nullable', 'string', 'max:500'],
