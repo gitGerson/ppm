@@ -11,6 +11,14 @@ class EditPemesanan extends EditRecord
 {
     protected static string $resource = PemesananResource::class;
 
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $data['total_amount'] = collect($data['detailPemesanans'] ?? [])
+            ->sum(fn (array $detail): int => (int) ($detail['total_amount'] ?? 0));
+
+        return $data;
+    }
+
     protected function getHeaderActions(): array
     {
         return [
@@ -19,7 +27,7 @@ class EditPemesanan extends EditRecord
         ];
     }
 
-        public function getTitle(): string
+    public function getTitle(): string
     {
         return 'Edit Data Pemesanan';
     }

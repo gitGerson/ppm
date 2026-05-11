@@ -17,7 +17,7 @@ class ViewPemesanan extends ViewRecord
         ];
     }
 
-        public function getTitle(): string
+    public function getTitle(): string
     {
         return 'Lihat Data Pemesanan';
     }

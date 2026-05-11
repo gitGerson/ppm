@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/assets/logo.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('images/assets/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/assets/logo.png') }}">
     <!-- Tailwind (browser build) -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
