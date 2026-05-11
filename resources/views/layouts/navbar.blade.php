@@ -23,9 +23,10 @@
             ],
         ];
     @endphp
-    <div class="max-w-screen-xl relative flex flex-wrap items-center justify-between mx-auto py-2">
+    <div class="pointer-events-none absolute inset-x-0 top-0 h-8 bg-[#334B49]"></div>
+    <div class="max-w-screen-xl relative z-10 flex flex-wrap items-center justify-between mx-auto pt-8 pb-1">
         <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
-            <img src="{{ asset('images/assets/logo3.png') }}" class="h-20 hidden sm:block lg:h-24" alt="Logo" />
+            <img src="{{ asset('images/assets/logo3.png') }}" class="h-14 hidden sm:block lg:h-16" alt="Logo" />
         </a>
 
         <button data-collapse-toggle="navbar-default" type="button"
