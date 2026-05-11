@@ -76,9 +76,9 @@ class HomeController extends Controller
         $announcements = Pengumuman::query()
             ->where('visible', true)
             ->orderByDesc('date')
-            ->get();
+            ->paginate(5);
 
-        $firstWithDate = $announcements->firstWhere('date');
+        $firstWithDate = $announcements->getCollection()->firstWhere('date');
 
         $calendarFocus = $firstWithDate && $firstWithDate->date
             ? Carbon::parse($firstWithDate->date)
@@ -113,7 +113,7 @@ class HomeController extends Controller
             $weeks[] = $week;
         }
 
-        $highlightedDays = $announcements
+        $highlightedDays = $announcements->getCollection()
             ->filter(function ($announcement) use ($calendarYear, $calendarMonth) {
                 if (empty($announcement->date)) {
                     return false;
