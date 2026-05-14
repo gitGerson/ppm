@@ -29,14 +29,15 @@
 <body class="min-h-screen">
     <!-- Background video -->
     <div class="fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
-        <iframe
-            class="absolute top-1/2 left-1/2 min-w-full min-h-full w-auto h-auto -translate-x-1/2 -translate-y-1/2 object-cover pointer-events-none"
-            width="560" height="315"
-            src="https://www.youtube.com/embed/U25zg7m49vo?si=2uzok_BG00EU18UW&controls=0&autoplay=1&mute=1&rel=0&modestbranding=1&loop=1&playlist=U25zg7m49vo&playsinline=1"
-            title="Background video" frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
-        </iframe>
+        <video
+            class="absolute inset-0 size-full object-cover pointer-events-none"
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="metadata">
+            <source src="{{ asset('compro.mp4') }}" type="video/mp4">
+        </video>
 
         <!-- Dark overlay above the video -->
         <div class="absolute inset-0 bg-black/40 pointer-events-none"></div>
