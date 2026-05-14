@@ -4,20 +4,28 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use BezhanSalleh\FilamentShield\Traits\HasPanelShield;
+use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory;
 
     use HasPanelShield;
     use HasRoles;
     use Notifiable;
+
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+    ];
 
     protected $hidden = [
         'password',
@@ -29,8 +37,8 @@ class User extends Authenticatable implements FilamentUser
         'password' => 'hashed',
     ];
 
-    public function beritas(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function beritas(): HasMany
     {
-        return $this->hasMany(\App\Models\Berita::class);
+        return $this->hasMany(Berita::class);
     }
 }

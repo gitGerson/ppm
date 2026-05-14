@@ -24,6 +24,8 @@
                 'active' => request()->routeIs('pendaftaran'),
             ],
         ];
+        $authLinkClasses = 'inline-flex items-center justify-center rounded-full border border-[#23413C] px-4 py-2 text-sm font-semibold text-[#23413C] transition hover:bg-[#23413C] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7FA08F]/40';
+        $accountMenuItemClasses = 'flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-[#5D4D28] transition hover:bg-[#d8c895] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7FA08F]/40';
     @endphp
     <div class="pointer-events-none absolute inset-x-0 top-0 h-8 bg-[#334B49]"></div>
     <div class="max-w-screen-xl relative z-10 flex flex-wrap items-center justify-between mx-auto pt-8 pb-1">
@@ -78,6 +80,48 @@
                         </a>
                     </li>
                 @endforeach
+                <li class="md:ml-2">
+                    @auth
+                        <div class="group relative">
+                            <button type="button"
+                                class="inline-flex size-10 items-center justify-center rounded-full text-[#1f1f1f] transition hover:bg-[#E4D8B3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7FA08F]/40"
+                                aria-label="User menu">
+                                <svg class="size-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M15.75 7.5a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.25a7.5 7.5 0 0 1 15 0" />
+                                </svg>
+                            </button>
+
+                            <div
+                                class="invisible absolute right-0 top-full z-30 mt-2 w-48 overflow-hidden bg-[#E7D8A9]/95 opacity-0 shadow-[0_18px_40px_-24px_rgba(48,38,15,0.6)] ring-1 ring-[#B9A56E]/40 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                                <a href="{{ route('profile.edit') }}" class="{{ $accountMenuItemClasses }}">
+                                    <svg class="size-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                        fill="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3ZM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3ZM8 13c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13ZM16 13c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5Z" />
+                                    </svg>
+                                    Edit Profil
+                                </a>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="{{ $accountMenuItemClasses }}">
+                                        <svg class="size-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M18 15l3-3m0 0-3-3m3 3H9" />
+                                        </svg>
+                                        LogOut
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    @else
+                        <a href="{{ route('login') }}" class="{{ $authLinkClasses }}">
+                            Login Santri
+                        </a>
+                    @endauth
+                </li>
             </ul>
         </div>
     </div>
