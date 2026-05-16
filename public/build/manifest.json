@@ -1,6 +1,10 @@
 {
+  "public/images/assets/sidebar_bg.png": {
+    "file": "assets/sidebar_bg-DzzPjTr1.png",
+    "src": "public/images/assets/sidebar_bg.png"
+  },
   "resources/css/app.css": {
-    "file": "assets/app-C_C_XFvb.css",
+    "file": "assets/app-BTvtToaG.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
@@ -8,7 +12,7 @@
     ]
   },
   "resources/css/filament/admin/theme.css": {
-    "file": "assets/theme-BDkKqiUa.css",
+    "file": "assets/theme-weyBlkwj.css",
     "src": "resources/css/filament/admin/theme.css",
     "isEntry": true,
     "names": [

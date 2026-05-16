@@ -3,3 +3,129 @@
 
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
+
+:root {
+    --ppm-sidebar-bg: #1A453A;
+    --ppm-sidebar-active: #59673b;
+    --ppm-sidebar-text: #edf7f1;
+    --ppm-sidebar-muted: #c7d9d0;
+    --ppm-brand-gold: #c7a333;
+}
+
+.fi-body {
+    background: #f4f5f4;
+}
+
+.fi-sidebar {
+    isolation: isolate;
+    overflow: hidden;
+    background:
+        linear-gradient(rgba(26, 69, 58, 0.9), rgba(26, 69, 58, 0.9)),
+        var(--ppm-sidebar-bg) !important;
+    border-inline-end: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--ppm-sidebar-text);
+}
+
+.fi-sidebar::before {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: 24rem;
+    content: "";
+    background-image: url('../../../../public/images/assets/sidebar_bg.png');
+    background-position: bottom center;
+    background-repeat: no-repeat;
+    background-size: 100% auto;
+    mix-blend-mode: screen;
+    opacity: 0.75;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.fi-sidebar > * {
+    position: relative;
+    z-index: 1;
+}
+
+:not(.fi-body-has-topbar) .fi-sidebar-header {
+    height: 8rem;
+    align-items: end;
+    justify-content: center;
+    padding: 1.5rem 1.5rem 0.75rem;
+}
+
+.fi-sidebar-header-logo-ctn {
+    display: flex;
+    justify-content: center;
+}
+
+.fi-sidebar .fi-logo {
+    width: 100%;
+    max-width: 16rem;
+    margin-inline-start: 0 !important;
+    object-fit: contain;
+}
+
+.fi-sidebar-nav {
+    padding: 0.75rem 1.25rem 2rem;
+}
+
+.fi-sidebar-nav-groups,
+.fi-sidebar-group,
+.fi-sidebar-group-items {
+    gap: 0.25rem;
+}
+
+.fi-sidebar-item-btn {
+    min-height: 2rem;
+    justify-content: start;
+    gap: 0.85rem;
+    border-radius: 0.25rem;
+    padding: 0.45rem 0.85rem;
+}
+
+.fi-sidebar-item-btn > .fi-icon,
+.fi-sidebar-group-btn .fi-icon,
+.fi-sidebar-group-dropdown-trigger-btn .fi-icon {
+    width: 1.15rem;
+    height: 1.15rem;
+    color: var(--ppm-sidebar-text) !important;
+}
+
+.fi-sidebar-item-label,
+.fi-sidebar-group-label {
+    color: var(--ppm-sidebar-text) !important;
+    font-size: 0.84rem;
+    font-weight: 400;
+}
+
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn,
+.fi-sidebar-item.fi-sidebar-item-has-url > .fi-sidebar-item-btn:hover,
+.fi-sidebar-item.fi-sidebar-item-has-url > .fi-sidebar-item-btn:focus-visible {
+    background: var(--ppm-sidebar-active) !important;
+}
+
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-icon,
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-sidebar-item-label {
+    color: #ffffff !important;
+}
+
+.fi-sidebar-footer {
+    margin: 0 1rem 1rem;
+    border-radius: 0.75rem;
+    background: rgba(12, 55, 45, 0.82);
+    padding: 0.5rem;
+    box-shadow: 0 0.75rem 2rem rgba(6, 34, 28, 0.32);
+    backdrop-filter: blur(4px);
+}
+
+.fi-sidebar .fi-user-menu-trigger,
+.fi-sidebar-database-notifications-btn {
+    color: var(--ppm-sidebar-muted);
+}
+
+.fi-sidebar .fi-user-menu-trigger {
+    width: 100%;
+    border-radius: 0.55rem;
+    padding: 0.35rem;
+}

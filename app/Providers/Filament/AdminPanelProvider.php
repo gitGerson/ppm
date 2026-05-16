@@ -34,8 +34,9 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->favicon(asset('images/assets/logo.png'))
             ->brandLogo(asset('images/assets/logo4.png'))
-            ->brandLogoHeight('5rem')
-            ->topNavigation()
+            ->brandLogoHeight('6rem')
+            ->sidebarWidth('17rem')
+            ->topbar(false)
             ->registration()
             ->colors([
                 'primary' => Color::Slate,
@@ -55,7 +56,8 @@ class AdminPanelProvider extends PanelProvider
                 PemesananTrendChart::class,
             ])
             ->plugins([
-                FilamentShieldPlugin::make(),
+                FilamentShieldPlugin::make()
+                    ->navigationGroup(''),
                 FilamentBackgroundsPlugin::make()->showAttribution(false),
                 BreezyCore::make()
                     ->myProfile(),
