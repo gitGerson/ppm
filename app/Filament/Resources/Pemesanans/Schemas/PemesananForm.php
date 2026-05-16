@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Pemesanans\Schemas;
 
 use App\Models\Item;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -34,6 +35,9 @@ class PemesananForm
                             ->required()
                             ->columnSpanFull()
                             ->maxLength(255),
+                        TextInput::make('nama_kos')
+                            ->label('Nama Kos')
+                            ->maxLength(255),
                         TextInput::make('total_amount')
                             ->label('Total Pemesanan')
                             ->required()
@@ -49,6 +53,35 @@ class PemesananForm
                             ])
                             ->default('belum_lunas')
                             ->required(),
+                        Select::make('seragam_ppm_size')
+                            ->label('Ukuran Seragam PPM')
+                            ->options([
+                                'S' => 'S',
+                                'M' => 'M',
+                                'L' => 'L',
+                                'XL' => 'XL',
+                                'XXL' => 'XXL',
+                            ]),
+                        Select::make('baju_asad_size')
+                            ->label('Ukuran Baju ASAD')
+                            ->options([
+                                'S' => 'S',
+                                'M' => 'M',
+                                'L' => 'L',
+                                'XL' => 'XL',
+                                'XXL' => 'XXL',
+                            ]),
+                        FileUpload::make('bukti_pembayaran_path')
+                            ->label('Bukti Pembayaran')
+                            ->disk('public')
+                            ->directory('bukti-pembayaran')
+                            ->visibility('public')
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'application/pdf'])
+                            ->maxSize(2048)
+                            ->downloadable()
+                            ->openable()
+                            ->preventFilePathTampering()
+                            ->columnSpanFull(),
                     ]),
                 Section::make('Detail Item')
                     ->columnSpanFull()

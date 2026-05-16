@@ -23,6 +23,11 @@
                 'url' => route('pendaftaran'),
                 'active' => request()->routeIs('pendaftaran'),
             ],
+            [
+                'label' => 'Pemesanan',
+                'url' => route('pemesanan.create'),
+                'active' => request()->routeIs('pemesanan.*'),
+            ],
         ];
         $authLinkClasses = 'inline-flex items-center justify-center rounded-full border border-[#23413C] px-4 py-2 text-sm font-semibold text-[#23413C] transition hover:bg-[#23413C] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7FA08F]/40';
         $accountMenuItemClasses = 'flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-[#5D4D28] transition hover:bg-[#d8c895] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7FA08F]/40';

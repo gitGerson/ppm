@@ -29,6 +29,10 @@ class PemesanansTable
                     ->label('Alamat')
                     ->limit(40)
                     ->tooltip(fn ($record): string => $record->address),
+                TextColumn::make('nama_kos')
+                    ->label('Nama Kos')
+                    ->placeholder('-')
+                    ->searchable(),
                 TextColumn::make('detail_pemesanans_count')
                     ->label('Jumlah Item')
                     ->counts('detailPemesanans')

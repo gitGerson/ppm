@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\UserAuthenticatedSessionController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PemesananPageController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +27,12 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/home', [HomeController::class, 'home'])->name('home');
 Route::get('/pengumuman', [HomeController::class, 'pengumuman'])->name('pengumuman');
+Route::get('/pemesanan', [PemesananPageController::class, 'create'])
+    ->middleware('auth')
+    ->name('pemesanan.create');
+Route::post('/pemesanan', [PemesananPageController::class, 'store'])
+    ->middleware('auth')
+    ->name('pemesanan.store');
 Route::get('/pendaftaran', [HomeController::class, 'pendaftaran'])
     ->middleware('auth')
     ->name('pendaftaran');
