@@ -14,6 +14,11 @@
         ];
         $routeItems = [
             [
+                'label' => 'Dashboard',
+                'url' => route('home'),
+                'active' => request()->routeIs('home'),
+            ],
+            [
                 'label' => 'Pengumuman',
                 'url' => route('pengumuman'),
                 'active' => request()->routeIs('pengumuman'),
@@ -51,7 +56,7 @@
         <div class="hidden w-full md:block md:w-auto" id="navbar-default">
             <ul class="mt-4 flex flex-col rounded-2xl border border-[#D9E6DE] bg-white/95 p-3 shadow-[0_18px_44px_-30px_rgba(28,50,45,0.45)]
                  md:mt-0 md:flex-row md:items-center md:gap-2 md:rounded-none md:border-0 md:bg-transparent md:p-0 md:shadow-none rtl:space-x-reverse">
-                @foreach ($homeSectionItems as $item)
+                <!-- @foreach ($homeSectionItems as $item)
                     @php
                         $target = $item['target'];
                         $href = $isHome ? "#{$target}" : "{$homeUrl}#{$target}";
@@ -69,7 +74,7 @@
                                 class="pointer-events-none absolute inset-x-3 -bottom-0.5 h-0.5 origin-left scale-x-0 rounded-full bg-[#23413C] transition-transform duration-200 group-hover:scale-x-100 group-[aria-current=page]:scale-x-100"></span>
                         </a>
                     </li>
-                @endforeach
+                @endforeach -->
                 @foreach ($routeItems as $item)
                     @php
                         $classes = $baseLinkClasses . ' ' . ($item['active'] ? $activeLinkClasses : $inactiveLinkClasses);

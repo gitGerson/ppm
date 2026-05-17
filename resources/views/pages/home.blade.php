@@ -631,6 +631,34 @@
     </section>
     <!-- Kegiatan Belajar Mengajar - end -->
 
+    <!-- Lingkungan -->
+    <section id="lingkungan" class="bg-[#F8FAF8] py-6 sm:py-8 lg:py-12 scroll-mt-24">
+        <div class="mx-auto max-w-screen-2xl px-4 md:px-8">
+            <div class="mb-8 flex flex-col gap-4 md:mb-10 lg:flex-row lg:items-end lg:justify-between">
+                <div class="max-w-2xl">
+                    <span class="inline-flex items-center rounded-full bg-[#DDE4E2] px-4 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-[#334B49]">
+                        Virtual Tour
+                    </span>
+                    <h2 class="mt-4 text-2xl font-bold text-[#334B49] md:text-3xl lg:text-4xl">Lingkungan PPM</h2>
+                    <p class="mt-3 text-sm leading-7 text-[#5C716F] md:text-base">
+                        Jelajahi suasana lingkungan PPM Al-Kautsar Bina Insani secara interaktif.
+                    </p>
+                </div>
+
+                <div class="rounded-3xl border border-[#DDE4E2] bg-white px-5 py-4 text-sm text-[#5C716F] shadow-lg shadow-[#334B49]/6">
+                    Tampilan 360 derajat area pondok dan fasilitas pendukung.
+                </div>
+            </div>
+
+            <div class="overflow-hidden rounded-[2rem] border border-[#DDE4E2] bg-white shadow-xl shadow-[#334B49]/10">
+                <div class="min-h-[650px] w-full">
+                    <script async src="https://static.theasys.io/embed.js" data-theasys="TLHlfVRvvCHF0JbFPWRF91JlKZDQ3H" data-height="650"></script>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Lingkungan - end -->
+
     <!-- Daftar -->
     <!-- <section id="daftar" class="bg-[#F5F7F6] py-6 sm:py-8 lg:py-12 scroll-mt-24">
         <div class="mx-auto max-w-screen-xl px-4 md:px-8">
