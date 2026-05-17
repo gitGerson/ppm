@@ -21,6 +21,7 @@ class BeritaFactory extends Factory
         return [
             'user_id' => User::factory(),
             'title' => fake('id_ID')->sentence(6),
+            'category' => fake()->randomElement(array_keys(Berita::categoryOptions())),
             'date' => fake()->dateTimeBetween('-3 months', 'now')->format('Y-m-d'),
             'content' => fake('id_ID')->paragraphs(3, true),
             'image_url' => null,

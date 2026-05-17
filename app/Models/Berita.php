@@ -12,14 +12,33 @@ class Berita extends Model
     /** @use HasFactory<BeritaFactory> */
     use HasFactory;
 
+    public const CategoryPengajian = 'Pengajian';
+
+    public const CategoryPraktek = 'Praktek';
+
+    public const CategoryEkstrakulikuler = 'Ekstrakulikuler';
+
     protected $fillable = [
         'user_id',
         'title',
+        'category',
         'date',
         'content',
         'image_url',
         'visible',
     ];
+
+    /**
+     * @return array<string, string>
+     */
+    public static function categoryOptions(): array
+    {
+        return [
+            self::CategoryPengajian => self::CategoryPengajian,
+            self::CategoryPraktek => self::CategoryPraktek,
+            self::CategoryEkstrakulikuler => self::CategoryEkstrakulikuler,
+        ];
+    }
 
     public function user(): BelongsTo
     {

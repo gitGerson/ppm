@@ -2,13 +2,15 @@
 
 namespace App\Filament\Resources\Beritas\Tables;
 
-use Filament\Tables\Table;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
+use App\Models\Berita;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 
 class BeritasTable
 {
@@ -20,6 +22,10 @@ class BeritasTable
                     ->label('Judul')
                     ->sortable()
                     ->searchable(),
+                TextColumn::make('category')
+                    ->label('Kategori')
+                    ->badge()
+                    ->sortable(),
                 TextColumn::make('date')
                     ->label('Tanggal')
                     ->date()
@@ -29,7 +35,9 @@ class BeritasTable
                     ->sortable(),
             ])
             ->filters([
-                //
+                SelectFilter::make('category')
+                    ->label('Kategori')
+                    ->options(Berita::categoryOptions()),
             ])
             ->recordActions([
                 ViewAction::make(),

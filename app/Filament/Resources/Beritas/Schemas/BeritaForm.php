@@ -2,13 +2,14 @@
 
 namespace App\Filament\Resources\Beritas\Schemas;
 
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Schema;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
+use App\Models\Berita;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 
 class BeritaForm
 {
@@ -23,11 +24,16 @@ class BeritaForm
                         TextInput::make('title')
                             ->label('Title')
                             ->required(),
+                        Select::make('category')
+                            ->label('Category')
+                            ->options(Berita::categoryOptions())
+                            ->default(Berita::CategoryPengajian)
+                            ->required(),
                         Select::make('user_id')
                             ->label('User')
                             ->relationship('user', 'name')
                             ->required()
-                            ->default(fn() => auth()->id()),
+                            ->default(fn () => auth()->id()),
                         DatePicker::make('date')
                             ->label('Date')
                             ->required(),
