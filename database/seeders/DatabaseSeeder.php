@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             PengumumanSeeder::class,
             BeritaSeeder::class,
             CurriculumItemSeeder::class,
+            SliderSeeder::class,
         ]);
     }
 }

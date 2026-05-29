@@ -2,18 +2,6 @@
 @section('content')
 
     <!-- Hero -->
-    @php
-        $heroSlides = [
-            [
-                'image' => asset('images/assets/hero.png'),
-                'alt' => 'Kegiatan hero PPM',
-            ],
-            [
-                'image' => asset('images/assets/hero2.png'),
-                'alt' => 'Suasana pembelajaran PPM',
-            ],
-        ];
-    @endphp
     <section id="home" class="mx-auto w-full max-w-screen-xl px-4 pt-2 md:px-8 scroll-mt-24">
         <div class="overflow-hidden rounded-[2.5rem] border border-[#DDE4E2] bg-[#F8FAF8] shadow-xl/10">
             <div class="relative px-3 py-3 md:px-4 md:py-4" data-carousel="static">

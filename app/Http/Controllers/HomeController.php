@@ -7,6 +7,7 @@ use App\Models\CurriculumItem;
 use App\Models\DetailSantri;
 use App\Models\Event;
 use App\Models\Pengumuman;
+use App\Models\Slider;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -22,6 +23,27 @@ class HomeController extends Controller
 
     public function home()
     {
+        $heroSlides = Slider::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (Slider $slider): array => [
+                'image' => $slider->imageUrl(),
+                'alt' => $slider->alt_text ?: $slider->title,
+            ])
+            ->whenEmpty(fn () => collect([
+                [
+                    'image' => asset('images/assets/hero.png'),
+                    'alt' => 'Kegiatan hero PPM',
+                ],
+                [
+                    'image' => asset('images/assets/hero2.png'),
+                    'alt' => 'Suasana pembelajaran PPM',
+                ],
+            ]))
+            ->values();
+
         $curriculumItems = CurriculumItem::query()
             ->where('is_active', true)
             ->orderBy('sort_order')
@@ -90,6 +112,7 @@ class HomeController extends Controller
         $santriDefaultMonthKey = data_get($santriMonthly->last(), 'month_key');
 
         return view('pages.home', [
+            'heroSlides' => $heroSlides,
             'curriculumItems' => $curriculumItems,
             'beritaCategories' => $beritaCategories,
             'eventItems' => $events,
