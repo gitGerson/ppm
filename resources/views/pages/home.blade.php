@@ -631,6 +631,92 @@
     </section>
     <!-- Kegiatan Belajar Mengajar - end -->
 
+    <!-- Event -->
+    <section id="event" class="bg-white py-6 sm:py-8 lg:py-12 scroll-mt-24">
+        <div class="mx-auto max-w-screen-2xl px-4 md:px-8">
+            <div class="mb-8 flex flex-col gap-4 md:mb-10 lg:flex-row lg:items-end lg:justify-between">
+                <div class="max-w-2xl">
+                    <span class="inline-flex items-center rounded-full bg-[#DDE4E2] px-4 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-[#334B49]">
+                        Video Event
+                    </span>
+                    <h2 class="mt-4 text-2xl font-bold text-[#334B49] md:text-3xl lg:text-4xl">Event PPM</h2>
+                    <p class="mt-3 text-sm leading-7 text-[#5C716F] md:text-base">
+                        Dokumentasi video kegiatan dan momen penting PPM Al-Kautsar Bina Insani.
+                    </p>
+                </div>
+
+                <div class="rounded-3xl border border-[#DDE4E2] bg-[#F8FAF8] px-5 py-4 text-sm text-[#5C716F] shadow-lg shadow-[#334B49]/6">
+                    Geser video untuk melihat dokumentasi event lainnya.
+                </div>
+            </div>
+
+            <div class="overflow-hidden rounded-[2.5rem] border border-[#DDE4E2] bg-[#F8FAF8] shadow-xl/10">
+                @if ($eventItems->isNotEmpty())
+                    <div class="relative px-3 py-3 md:px-4 md:py-4" data-carousel="static" data-event-carousel>
+                        <div class="absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top_left,_rgba(150,177,173,0.18),_transparent_42%),radial-gradient(circle_at_top_right,_rgba(51,75,73,0.14),_transparent_36%)]"></div>
+
+                        <div class="relative overflow-hidden rounded-[2rem] bg-[#233533]">
+                            <div class="relative min-h-[420px] w-full md:min-h-[560px]">
+                                @foreach ($eventItems as $index => $event)
+                                    @php
+                                        $videoExtension = \Illuminate\Support\Str::lower(pathinfo($event->asset_video, PATHINFO_EXTENSION));
+                                        $videoType = match ($videoExtension) {
+                                            'webm' => 'video/webm',
+                                            'ogg', 'ogv' => 'video/ogg',
+                                            default => 'video/mp4',
+                                        };
+                                    @endphp
+                                    <div class="hidden duration-700 ease-in-out" @if ($index === 0) data-carousel-item="active" @else data-carousel-item @endif>
+                                        <video class="absolute inset-0 h-full w-full bg-black object-contain" controls muted playsinline preload="metadata" data-event-video>
+                                            <source src="{{ asset('storage/'.$event->asset_video) }}" type="{{ $videoType }}">
+                                            Browser Anda tidak mendukung pemutar video.
+                                        </video>
+
+                                        <div class="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#111B1A]/90 via-[#111B1A]/35 to-transparent p-5 md:p-8">
+                                            <h3 class="max-w-3xl text-xl font-semibold text-white md:text-2xl">{{ $event->judul }}</h3>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        @if ($eventItems->count() > 1)
+                            <button type="button"
+                                class="absolute left-6 top-1/2 z-30 flex -translate-y-1/2 items-center justify-center focus:outline-none"
+                                data-carousel-prev>
+                                <span class="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/16 text-white shadow-lg backdrop-blur-sm transition hover:bg-white/26 focus:ring-4 focus:ring-white/25">
+                                    <svg class="h-4 w-4 rtl:rotate-180" aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 1 1 5l4 4" />
+                                    </svg>
+                                    <span class="sr-only">Previous</span>
+                                </span>
+                            </button>
+                            <button type="button"
+                                class="absolute right-6 top-1/2 z-30 flex -translate-y-1/2 items-center justify-center focus:outline-none"
+                                data-carousel-next>
+                                <span class="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/16 text-white shadow-lg backdrop-blur-sm transition hover:bg-white/26 focus:ring-4 focus:ring-white/25">
+                                    <svg class="h-4 w-4 rtl:rotate-180" aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="m1 9 4-4-4-4" />
+                                    </svg>
+                                    <span class="sr-only">Next</span>
+                                </span>
+                            </button>
+                        @endif
+                    </div>
+                @else
+                    <div class="px-6 py-16 text-center text-sm text-[#6E8481]">
+                        Belum ada video event yang dapat ditampilkan.
+                    </div>
+                @endif
+            </div>
+        </div>
+    </section>
+    <!-- Event - end -->
+
     <!-- Lingkungan -->
     <section id="lingkungan" class="bg-[#F8FAF8] py-6 sm:py-8 lg:py-12 scroll-mt-24">
         <div class="mx-auto max-w-screen-2xl px-4 md:px-8">
@@ -737,6 +823,38 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('[data-event-carousel]').forEach((carousel) => {
+                const slides = Array.from(carousel.querySelectorAll('[data-carousel-item]'));
+
+                const syncEventVideos = () => {
+                    slides.forEach((slide) => {
+                        const video = slide.querySelector('[data-event-video]');
+
+                        if (!video) {
+                            return;
+                        }
+
+                        if (slide.classList.contains('hidden')) {
+                            video.pause();
+                            video.currentTime = 0;
+
+                            return;
+                        }
+
+                        video.play().catch(() => {});
+                    });
+                };
+
+                slides.forEach((slide) => {
+                    new MutationObserver(syncEventVideos).observe(slide, {
+                        attributes: true,
+                        attributeFilter: ['class'],
+                    });
+                });
+
+                syncEventVideos();
+            });
+
             const navLinks = Array.from(document.querySelectorAll('[data-scroll-target]'));
             if (!navLinks.length) {
                 return;

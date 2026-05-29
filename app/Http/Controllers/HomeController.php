@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Berita;
 use App\Models\CurriculumItem;
 use App\Models\DetailSantri;
+use App\Models\Event;
 use App\Models\Pengumuman;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -32,6 +33,11 @@ class HomeController extends Controller
             ->orderByDesc('date')
             ->orderByDesc('created_at')
             ->with('user')
+            ->limit(8)
+            ->get();
+
+        $events = Event::query()
+            ->latest()
             ->limit(8)
             ->get();
 
@@ -66,6 +72,7 @@ class HomeController extends Controller
         return view('pages.home', [
             'curriculumItems' => $curriculumItems,
             'beritaItems' => $articles,
+            'eventItems' => $events,
             'santriChart' => $santriMonthly,
             'santriDefaultMonthKey' => $santriDefaultMonthKey,
         ]);
