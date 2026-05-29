@@ -28,6 +28,7 @@ Route::middleware('auth')->group(function () {
 Route::get('/home', [HomeController::class, 'home'])->name('home');
 Route::get('/kegiatan/{category}', [HomeController::class, 'beritaCategory'])->name('berita.category');
 Route::get('/pengumuman', [HomeController::class, 'pengumuman'])->name('pengumuman');
+Route::view('/guidebook', 'pages.guidebook')->name('guidebook');
 Route::get('/pemesanan', [PemesananPageController::class, 'create'])
     ->middleware('auth')
     ->name('pemesanan.create');

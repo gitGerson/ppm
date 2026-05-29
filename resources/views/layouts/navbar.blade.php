@@ -29,6 +29,11 @@
                 'active' => request()->routeIs('pendaftaran'),
             ],
             [
+                'label' => 'Guidebook',
+                'url' => route('guidebook'),
+                'active' => request()->routeIs('guidebook'),
+            ],
+            [
                 'label' => 'Pemesanan',
                 'url' => route('pemesanan.create'),
                 'active' => request()->routeIs('pemesanan.*'),
