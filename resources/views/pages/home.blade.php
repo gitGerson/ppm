@@ -565,64 +565,58 @@
                 </div>
             </div>
 
-            <div class="grid gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4 xl:gap-8">
-                @forelse ($beritaItems as $news)
+            <div class="grid gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:gap-8">
+                @forelse ($beritaCategories as $category)
                     @php
-                        $authorName = optional($news->user)->name ?? 'Admin PPM';
-                        $publishedAt = $news->date
-                            ? \Illuminate\Support\Carbon::parse($news->date)
-                            : ($news->created_at ?: null);
-                        $authorInitial = \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($authorName, 0, 1));
-                        $excerpt = \Illuminate\Support\Str::limit(strip_tags($news->content ?? ''), 140);
+                        $latest = $category['latest'];
+                        $categoryImage = $latest?->image_url
+                            ? asset('storage/' . $latest->image_url)
+                            : asset('images/assets/hero.png');
                     @endphp
-                    <article class="group flex flex-col overflow-hidden rounded-[1.75rem] border border-[#E4EBE8] bg-white shadow-lg shadow-[#334B49]/8 transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#334B49]/12">
-                        <a href="#" class="relative block h-52 overflow-hidden bg-[#E8EFED] md:h-64">
-                            <img src="{{ $news->image_url ? asset('storage/' . $news->image_url) : asset('images/assets/hero.png') }}" loading="lazy" alt="{{ $news->title }}"
+                    <a href="{{ route('berita.category', $category['slug']) }}"
+                        class="group flex min-h-[26rem] flex-col overflow-hidden rounded-[1.75rem] border border-[#E4EBE8] bg-[#F8FAF8] shadow-lg shadow-[#334B49]/8 transition duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-xl hover:shadow-[#334B49]/12">
+                        <div class="relative h-48 overflow-hidden bg-[#E8EFED]">
+                            <img src="{{ $categoryImage }}" loading="lazy" alt="Kategori {{ $category['label'] }}"
                                 class="absolute inset-0 h-full w-full object-cover object-center transition duration-500 group-hover:scale-105" />
-                            <div class="absolute inset-0 bg-gradient-to-t from-[#233533]/65 via-[#233533]/10 to-transparent"></div>
-                            <div class="absolute left-4 top-4">
-                                <span class="rounded-full bg-white/85 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#334B49] backdrop-blur">
-                                    Berita
-                                </span>
-                            </div>
-                            @if ($publishedAt)
-                                <div class="absolute bottom-4 left-4 rounded-2xl bg-white/14 px-3 py-2 text-xs font-medium text-white backdrop-blur">
-                                    {{ $publishedAt->format('d M Y') }}
-                                </div>
-                            @endif
-                        </a>
-
-                        <div class="flex flex-1 flex-col p-5 sm:p-6">
-                            <h3 class="text-lg font-semibold leading-snug text-[#334B49]">
-                                <a href="#" class="transition duration-100 group-hover:text-[#496764]">
-                                    {{ $news->title }}
-                                </a>
-                            </h3>
-
-                            @if ($excerpt)
-                                <p class="mt-3 text-sm leading-7 text-[#5C716F]">{{ $excerpt }}</p>
-                            @endif
-
-                            <div class="mt-6 h-px w-full bg-gradient-to-r from-[#DDE4E2] via-[#EEF3F1] to-transparent"></div>
-
-                            <div class="mt-5 flex items-center justify-between gap-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#DDE4E2] text-sm font-semibold text-[#334B49] shadow-inner shadow-white">
-                                        {{ $authorInitial }}
-                                    </div>
-
-                                    <div>
-                                        <span class="block text-sm font-semibold text-[#334B49]">{{ $authorName }}</span>
-                                        <span class="block text-xs uppercase tracking-[0.18em] text-[#7A908D]">Penulis</span>
-                                    </div>
-                                </div>
-
-                                <span class="rounded-full bg-[#F3F6F5] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#6E8481]">
-                                    Kegiatan
+                            <div class="absolute inset-0 bg-gradient-to-t from-[#233533]/70 via-[#233533]/10 to-transparent"></div>
+                            <div class="absolute left-4 top-4 flex items-center gap-2">
+                                <span class="inline-flex rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#334B49] backdrop-blur">
+                                    Kategori
                                 </span>
                             </div>
                         </div>
-                    </article>
+
+                        <div class="flex flex-1 flex-col justify-between p-5 sm:p-6">
+                            <div>
+                                <div class="flex items-start justify-between gap-4">
+                                    <span class="rounded-full bg-[#DDE4E2] px-3 py-1 text-xs font-semibold text-[#334B49]">
+                                        {{ $category['count'] }} berita
+                                    </span>
+                                </div>
+
+                                <h3 class="mt-5 text-2xl font-semibold leading-tight text-[#334B49]">
+                                    {{ $category['label'] }}
+                                </h3>
+
+                                <p class="mt-4 text-sm leading-7 text-[#5C716F]">
+                                    Lihat daftar berita dan dokumentasi kegiatan berdasarkan kategori {{ $category['label'] }}.
+                                </p>
+                            </div>
+
+                            <div class="mt-8 flex items-center justify-between gap-4 border-t border-[#DDE4E2] pt-5">
+                                <span class="text-xs uppercase tracking-[0.18em] text-[#7A908D]">
+                                    Lihat daftar
+                                </span>
+
+                                <span class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#334B49] text-white transition group-hover:bg-[#496764]">
+                                    <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M3 10a1 1 0 011-1h9.586l-3.293-3.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414-1.414L13.586 11H4a1 1 0 01-1-1z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span class="sr-only">Lihat kategori {{ $category['label'] }}</span>
+                                </span>
+                            </div>
+                        </div>
+                    </a>
                 @empty
                     <p class="text-sm text-gray-600">Belum ada berita kegiatan terbaru.</p>
                 @endforelse

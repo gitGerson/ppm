@@ -6,6 +6,7 @@ use Database\Factories\BeritaFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class Berita extends Model
 {
@@ -38,6 +39,17 @@ class Berita extends Model
             self::CategoryPraktek => self::CategoryPraktek,
             self::CategoryEkstrakulikuler => self::CategoryEkstrakulikuler,
         ];
+    }
+
+    public static function categorySlug(string $category): string
+    {
+        return Str::slug($category);
+    }
+
+    public static function categoryFromSlug(string $slug): ?string
+    {
+        return collect(array_keys(self::categoryOptions()))
+            ->first(fn (string $category): bool => self::categorySlug($category) === $slug);
     }
 
     public function user(): BelongsTo

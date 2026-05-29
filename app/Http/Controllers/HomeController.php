@@ -28,13 +28,33 @@ class HomeController extends Controller
             ->orderBy('id')
             ->get();
 
-        $articles = Berita::query()
+        $categoryCounts = Berita::query()
             ->where('visible', true)
+            ->select('category')
+            ->selectRaw('COUNT(*) as aggregate')
+            ->groupBy('category')
+            ->pluck('aggregate', 'category');
+
+        $latestBeritaByCategory = Berita::query()
+            ->where('visible', true)
+            ->whereIn('category', array_keys(Berita::categoryOptions()))
             ->orderByDesc('date')
             ->orderByDesc('created_at')
-            ->with('user')
-            ->limit(8)
-            ->get();
+            ->get()
+            ->unique('category')
+            ->keyBy('category');
+
+        $beritaCategories = collect(Berita::categoryOptions())
+            ->map(function (string $label, string $category) use ($categoryCounts, $latestBeritaByCategory): array {
+                return [
+                    'label' => $label,
+                    'slug' => Berita::categorySlug($category),
+                    'count' => (int) ($categoryCounts[$category] ?? 0),
+                    'latest' => $latestBeritaByCategory->get($category),
+                ];
+            })
+            ->filter(fn (array $category): bool => $category['count'] > 0)
+            ->values();
 
         $events = Event::query()
             ->latest()
@@ -71,10 +91,30 @@ class HomeController extends Controller
 
         return view('pages.home', [
             'curriculumItems' => $curriculumItems,
-            'beritaItems' => $articles,
+            'beritaCategories' => $beritaCategories,
             'eventItems' => $events,
             'santriChart' => $santriMonthly,
             'santriDefaultMonthKey' => $santriDefaultMonthKey,
+        ]);
+    }
+
+    public function beritaCategory(string $category)
+    {
+        $categoryName = Berita::categoryFromSlug($category);
+
+        abort_if($categoryName === null, 404);
+
+        $articles = Berita::query()
+            ->where('visible', true)
+            ->where('category', $categoryName)
+            ->orderByDesc('date')
+            ->orderByDesc('created_at')
+            ->with('user')
+            ->paginate(9);
+
+        return view('pages.berita-category', [
+            'categoryName' => $categoryName,
+            'beritaItems' => $articles,
         ]);
     }
 
