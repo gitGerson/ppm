@@ -147,23 +147,6 @@
                         </div>
                     </div>
 
-                    <div class="rounded-[1.75rem] border border-[#D9E6DE] bg-[#F7FBF8] p-6 shadow-[0_20px_48px_-36px_rgba(28,50,45,0.35)]">
-                        <span class="inline-flex rounded-full border border-[#C9D8D0] bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#5A7169]">
-                            Dokumen
-                        </span>
-                        <h3 class="mt-4 text-lg font-semibold text-[#183530]">Unduh Surat Pernyataan</h3>
-                        <p class="mt-2 text-sm leading-6 text-[#60766E]">Silakan unduh berkas surat pernyataan pendaftaran santri.</p>
-                        <a href="#" class="mt-5 inline-flex items-center gap-2 rounded-full bg-[#334B49] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#263533]">
-                            <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd"
-                                    d="M3 3a1 1 0 011-1h4a1 1 0 110 2H5v12h10V4h-3a1 1 0 110-2h4a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V3zm6 2a1 1 0 10-2 0v6.586L6.707 10.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L9 11.586V5z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                            Unduh File
-                        </a>
-                    </div>
-
                     <div class="rounded-[1.75rem] border border-[#C9D8D0] bg-white p-6 shadow-[0_20px_48px_-36px_rgba(28,50,45,0.35)]">
                         <div class="flex items-start gap-3">
                             <div class="rounded-full bg-[#EDF4EF] p-2 text-[#35514A]">
