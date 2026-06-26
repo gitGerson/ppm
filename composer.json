@@ -12,7 +12,9 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.2",
+        "php": "^8.4",
+        "ext-intl": "*",
+        "ext-zip": "*",
         "andreia/filament-nord-theme": "^2.0",
         "bezhansalleh/filament-shield": "^4.0.2",
         "filament/filament": "^4.0",
