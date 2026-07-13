@@ -1,0 +1,92 @@
+{
+    "name": "jeffgreco13/filament-breezy",
+    "description": "A custom package for Filament with login flow, profile and teams support.",
+    "keywords": [
+        "jeffgreco13",
+        "laravel",
+        "filament-breezy"
+    ],
+    "homepage": "https://github.com/jeffgreco13/filament-breezy",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jeff Greco",
+            "email": "jeff@jeffpgreco.com",
+            "role": "Developer"
+        },
+        {
+            "name": "Jacobtims",
+            "email": "jacobtimmer04@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.2|^8.3|^8.4",
+        "bacon/bacon-qr-code": "^3.0",
+        "filament/filament": "^4.0|^5.0",
+        "illuminate/contracts": "^12.0|^13.0",
+        "mobiledetect/mobiledetectlib": "^4.8",
+        "pragmarx/google2fa": "^7.0|^8.0|^9.0",
+        "spatie/laravel-package-tools": "^1.93.0",
+        "web-auth/webauthn-lib": "^5.0|5.3.x-dev as 5.3.0"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.0",
+        "laravel/sanctum": "^4.0",
+        "orchestra/testbench": "^10.0|^11.0",
+        "pestphp/pest": "^3.0|^4.4",
+        "pestphp/pest-plugin-arch": "^3.0|^v4.0",
+        "pestphp/pest-plugin-laravel": "^3.0|^4.0",
+        "pestphp/pest-plugin-livewire": "^3.0|^4.0",
+        "phpstan/phpstan-deprecation-rules": "^2.0",
+        "phpstan/phpstan-phpunit": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jeffgreco13\\FilamentBreezy\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Jeffgreco13\\FilamentBreezy\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": "@composer run prepare",
+        "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
+        "prepare": "@php vendor/bin/testbench package:discover --ansi",
+        "build": [
+            "@composer run prepare",
+            "@php vendor/bin/testbench workbench:build --ansi"
+        ],
+        "start": [
+            "Composer\\Config::disableProcessTimeout",
+            "@composer run build",
+            "@php vendor/bin/testbench serve"
+        ],
+        "analyse": "vendor/bin/phpstan analyse",
+        "test": "vendor/bin/pest",
+        "test-coverage": "vendor/bin/pest --coverage",
+        "format": "vendor/bin/pint"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Jeffgreco13\\FilamentBreezy\\FilamentBreezyServiceProvider"
+            ],
+            "aliases": {
+                "FilamentBreezy": "Jeffgreco13\\FilamentBreezy\\Facades\\FilamentBreezy"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
