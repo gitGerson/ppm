@@ -1,0 +1,21 @@
+---
+deployment:
+  tasks:
+    - export APPROOT=/home/ppmalkau/repositories/ppm
+    - export DEPLOYPATH=/home/ppmalkau/public_html
+
+    # Clear caches from the previous release.
+    - /usr/bin/ea-php84 "$APPROOT/artisan" optimize:clear
+
+    # Apply new database migrations.
+    - /usr/bin/ea-php84 "$APPROOT/artisan" migrate --force
+
+    # Remove old hashed Vite files before publishing the new build.
+    - /bin/rm -rf "$DEPLOYPATH/build"
+
+    # Copy public files, but preserve the customized index.php and storage symlink.
+    - '/usr/bin/find "$APPROOT/public" -mindepth 1 -maxdepth 1 ! -name index.php ! -name storage -exec /bin/cp -a {} "$DEPLOYPATH/" \;'
+
+    # Rebuild safe production caches.
+    - /usr/bin/ea-php84 "$APPROOT/artisan" config:cache
+    - /usr/bin/ea-php84 "$APPROOT/artisan" view:cache
