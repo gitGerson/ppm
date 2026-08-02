@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Observers\DetailSantriObserver;
 use Database\Factories\DetailSantriFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[ObservedBy(DetailSantriObserver::class)]
 class DetailSantri extends Model
 {
     /** @use HasFactory<DetailSantriFactory> */
@@ -78,6 +81,16 @@ class DetailSantri extends Model
         'is_ayah_alive',
         'is_ibu_alive',
     ];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'sheet_synced_at' => 'datetime',
+        ];
+    }
 
     public function user(): BelongsTo
     {
