@@ -89,6 +89,7 @@ class DetailSantri extends Model
     {
         return [
             'sheet_synced_at' => 'datetime',
+            'pendaftaran_notified_at' => 'datetime',
         ];
     }
 
