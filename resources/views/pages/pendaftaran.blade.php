@@ -343,7 +343,7 @@
                                 </span>
                                 <h3 class="mt-4 text-lg font-semibold text-slate-900">Unduh Surat Pernyataan</h3>
                                 <p class="mt-2 text-sm leading-6 text-slate-600">Silakan unduh berkas surat pernyataan pendaftaran santri.</p>
-                                <a href="#" class="mt-5 inline-flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700">
+                                <a href="{{ asset('SURAT PERNYATAAN SANTRI BARU 2026.pdf') }}" download="SURAT PERNYATAAN SANTRI BARU 2026.pdf" class="mt-5 inline-flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700">
                                     <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"
                                         xmlns="http://www.w3.org/2000/svg">
                                         <path fill-rule="evenodd"
