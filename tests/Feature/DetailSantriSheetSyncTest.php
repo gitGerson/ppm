@@ -233,6 +233,23 @@ it('rejects an invalid value without wiping the stored one', function () {
         ->and(sheetRowFor($this->fake, $santri)[columnIndex('jenis_kelamin')])->toBe('Laki-laki');
 });
 
+it('rejects unsigned tiny integer values outside the database range', function (string $field) {
+    $santri = DetailSantri::factory()->create([$field => 2]);
+    $sync = app(DetailSantriSheetSync::class);
+    $sync->pushOne($santri);
+
+    $this->fake->tabs[SHEET][1][columnIndex($field)] = '256';
+
+    $sync->pull();
+    $santri->refresh();
+
+    expect($santri->getAttribute($field))->toBe(2)
+        ->and(sheetRowFor($this->fake, $santri)[columnIndex($field)])->toBe('2');
+})->with([
+    'anak ke' => 'anak_ke',
+    'jumlah saudara' => 'jumlah_saudara',
+]);
+
 it('does not re-apply a rejected cell as a fresh edit on the next run', function () {
     $santri = DetailSantri::factory()->create(['jenis_kelamin' => 'Laki-laki']);
     $sync = app(DetailSantriSheetSync::class);

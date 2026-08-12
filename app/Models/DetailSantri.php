@@ -15,6 +15,10 @@ class DetailSantri extends Model
     /** @use HasFactory<DetailSantriFactory> */
     use HasFactory;
 
+    public const MAX_ANAK_KE = 255;
+
+    public const MAX_JUMLAH_SAUDARA = 255;
+
     protected $table = 'detail_santris';
 
     protected $fillable = [

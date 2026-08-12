@@ -22,7 +22,7 @@ class SantriSheetSchema
     private const TEXT_TYPES = ['identifier'];
 
     /**
-     * @return array<string, array{label: string, type: string, editable: bool, values?: array<int, string>}>
+     * @return array<string, array{label: string, type: string, editable: bool, values?: array<int, string>, min?: int, max?: int}>
      */
     public static function columns(): array
     {
@@ -36,8 +36,20 @@ class SantriSheetSchema
             'tanggal_lahir' => ['label' => 'Tanggal Lahir', 'type' => 'date', 'editable' => true],
             'tempat_lahir' => ['label' => 'Tempat Lahir', 'type' => 'string', 'editable' => true],
             'status_anak' => ['label' => 'Status Anak', 'type' => 'string', 'editable' => true],
-            'anak_ke' => ['label' => 'Anak Ke', 'type' => 'int', 'editable' => true],
-            'jumlah_saudara' => ['label' => 'Jumlah Saudara', 'type' => 'int', 'editable' => true],
+            'anak_ke' => [
+                'label' => 'Anak Ke',
+                'type' => 'int',
+                'editable' => true,
+                'min' => 0,
+                'max' => DetailSantri::MAX_ANAK_KE,
+            ],
+            'jumlah_saudara' => [
+                'label' => 'Jumlah Saudara',
+                'type' => 'int',
+                'editable' => true,
+                'min' => 0,
+                'max' => DetailSantri::MAX_JUMLAH_SAUDARA,
+            ],
             'hobi' => ['label' => 'Hobi', 'type' => 'string', 'editable' => true],
             'cita-cita' => ['label' => 'Cita-cita', 'type' => 'string', 'editable' => true],
             'jenis_kelamin' => [
@@ -287,7 +299,7 @@ class SantriSheetSchema
     }
 
     /**
-     * @param  array{label: string, type: string, editable: bool, values?: array<int, string>}  $definition
+     * @param  array{label: string, type: string, editable: bool, values?: array<int, string>, min?: int, max?: int}  $definition
      * @return mixed|null null when the value cannot be parsed
      */
     private static function parseFromSheet(string $value, array $definition): mixed
@@ -295,7 +307,7 @@ class SantriSheetSchema
         // Sheets sometimes hands back the literal apostrophe used to force text.
         $value = ltrim($value, "'");
 
-        return match ($definition['type']) {
+        $parsed = match ($definition['type']) {
             'bool' => self::parseBool($value),
             'date' => self::parseDate($value),
             'int' => self::parseInt($value),
@@ -303,6 +315,18 @@ class SantriSheetSchema
             'enum' => self::parseEnum($value, $definition['values'] ?? []),
             default => $value,
         };
+
+        if (is_int($parsed)) {
+            if (isset($definition['min']) && $parsed < $definition['min']) {
+                return null;
+            }
+
+            if (isset($definition['max']) && $parsed > $definition['max']) {
+                return null;
+            }
+        }
+
+        return $parsed;
     }
 
     private static function parseBool(string $value): ?bool

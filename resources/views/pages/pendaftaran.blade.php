@@ -129,11 +129,11 @@
                                     </div>
                                     <div>
                                         <label for="anak_ke" class="{{ $labelClass }}">Anak Ke</label>
-                                        <input type="number" id="anak_ke" name="anak_ke" value="{{ $stringValue('anak_ke') }}" min="0" class="{{ $inputClass }}">
+                                        <input type="number" id="anak_ke" name="anak_ke" value="{{ $stringValue('anak_ke') }}" min="0" max="{{ \App\Models\DetailSantri::MAX_ANAK_KE }}" class="{{ $inputClass }}">
                                     </div>
                                     <div>
                                         <label for="jumlah_saudara" class="{{ $labelClass }}">Jumlah Saudara</label>
-                                        <input type="number" id="jumlah_saudara" name="jumlah_saudara" value="{{ $stringValue('jumlah_saudara') }}" min="0" class="{{ $inputClass }}">
+                                        <input type="number" id="jumlah_saudara" name="jumlah_saudara" value="{{ $stringValue('jumlah_saudara') }}" min="0" max="{{ \App\Models\DetailSantri::MAX_JUMLAH_SAUDARA }}" class="{{ $inputClass }}">
                                     </div>
                                     <div>
                                         <label for="hobi" class="{{ $labelClass }}">Hobi</label>
