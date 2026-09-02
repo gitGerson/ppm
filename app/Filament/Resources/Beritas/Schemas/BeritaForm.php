@@ -40,6 +40,9 @@ class BeritaForm
                         FileUpload::make('image_url')
                             ->label('Image')
                             ->image()
+                            ->disk('public')
+                            ->directory('berita')
+                            ->visibility('public')
                             ->columnSpanFull()
                             ->nullable(),
                         RichEditor::make('content')
