@@ -24,26 +24,34 @@ test('user can login from user login page', function () {
     $this->post(route('login.store'), [
         'email' => $user->email,
         'password' => 'secret-password',
-    ])->assertRedirect(route('pendaftaran'));
+    ])->assertRedirect(route('home'));
 
     $this->assertAuthenticatedAs($user);
 });
 
-test('user can register from the shared auth page', function () {
-    $this->post(route('register.store'), [
+test('user can register and is redirected to login as a guest', function () {
+    $response = $this->post(route('register.store'), [
         'name' => 'Santri Baru',
         'email' => 'santri-baru@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
         'auth_mode' => 'register',
-    ])->assertRedirect(route('pendaftaran'));
+    ]);
+
+    $response
+        ->assertRedirect(route('login'))
+        ->assertSessionHas('status', 'Pendaftaran berhasil. Silakan masuk menggunakan akun Anda.');
 
     $user = User::query()->where('email', 'santri-baru@example.com')->first();
 
     expect($user)->not->toBeNull()
         ->and($user->name)->toBe('Santri Baru');
 
-    $this->assertAuthenticatedAs($user);
+    $this->assertGuest();
+
+    $this->get(route('login'))
+        ->assertOk()
+        ->assertSee('Pendaftaran berhasil. Silakan masuk menggunakan akun Anda.');
 });
 
 test('register validates confirmed password', function () {

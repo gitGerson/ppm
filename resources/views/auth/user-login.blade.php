@@ -51,6 +51,12 @@
                                 <p class="mt-4 text-sm text-slate-500">Masukan akun yang sudah terdaftar!</p>
                             </div>
 
+                            @if (session('status'))
+                                <div role="status" class="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-700">
+                                    {{ session('status') }}
+                                </div>
+                            @endif
+
                             @if ($errors->login->any() || ($errors->any() && ! $errors->hasBag('register')))
                                 <div class="rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-700">
                                     {{ $errors->login->first() ?: $errors->first() }}

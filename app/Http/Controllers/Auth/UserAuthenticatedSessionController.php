@@ -8,7 +8,6 @@ use App\Http\Requests\Auth\UserRegisterRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class UserAuthenticatedSessionController extends Controller
@@ -24,18 +23,16 @@ class UserAuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('pendaftaran'));
+        return redirect()->route('home');
     }
 
     public function register(UserRegisterRequest $request): RedirectResponse
     {
-        $user = User::query()->create($request->validated());
+        User::query()->create($request->validated());
 
-        Auth::login($user);
-
-        $request->session()->regenerate();
-
-        return redirect()->route('pendaftaran');
+        return redirect()
+            ->route('login')
+            ->with('status', 'Pendaftaran berhasil. Silakan masuk menggunakan akun Anda.');
     }
 
     public function destroy(Request $request): RedirectResponse
