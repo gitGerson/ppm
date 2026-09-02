@@ -1,4 +1,4 @@
-<nav class="relative bg-white border-gray-200">
+<nav class="relative z-50 bg-white border-gray-200">
     @php
         $isHome = request()->routeIs('home');
         $homeUrl = route('home');
@@ -43,7 +43,7 @@
         $accountMenuItemClasses = 'flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-[#5D4D28] transition hover:bg-[#d8c895] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7FA08F]/40';
     @endphp
     <div class="pointer-events-none absolute inset-x-0 top-0 h-8 bg-[#334B49]"></div>
-    <div class="max-w-screen-xl relative z-10 flex flex-wrap items-center justify-between mx-auto pt-8 pb-1">
+    <div class="max-w-screen-xl relative z-50 flex flex-wrap items-center justify-between mx-auto pt-8 pb-1">
         <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
             <img src="{{ asset('images/assets/logo3.png') }}" class="h-14 hidden sm:block lg:h-16" alt="Logo" />
         </a>
@@ -109,7 +109,7 @@
                             </button>
 
                             <div
-                                class="invisible absolute right-0 top-full z-30 mt-2 w-48 overflow-hidden bg-[#E7D8A9]/95 opacity-0 shadow-[0_18px_40px_-24px_rgba(48,38,15,0.6)] ring-1 ring-[#B9A56E]/40 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                                class="invisible absolute right-0 top-full z-[100] mt-2 w-48 overflow-hidden bg-[#E7D8A9]/95 opacity-0 shadow-[0_18px_40px_-24px_rgba(48,38,15,0.6)] ring-1 ring-[#B9A56E]/40 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
                                 <a href="{{ route('profile.edit') }}" class="{{ $accountMenuItemClasses }}">
                                     <svg class="size-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
                                         fill="currentColor" viewBox="0 0 24 24">
