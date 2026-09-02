@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\SendPendaftaranWhatsapp;
 use App\Http\Requests\SubmitPendaftaranRequest;
-use App\Jobs\SendPendaftaranWhatsapp;
 use App\Models\Berita;
 use App\Models\CurriculumItem;
 use App\Models\DetailSantri;
@@ -303,7 +303,7 @@ class HomeController extends Controller
         // Confirmation goes out once, on the first completed submit; later edits
         // of the same form find the timestamp already set.
         if (Fonnte::isEnabled() && $detailSantri->pendaftaran_notified_at === null) {
-            SendPendaftaranWhatsapp::dispatch($detailSantri->getKey());
+            app(SendPendaftaranWhatsapp::class)->send($detailSantri->getKey());
         }
 
         return redirect()

@@ -1,11 +1,10 @@
 <?php
 
-use App\Jobs\SendPendaftaranWhatsapp;
+use App\Actions\SendPendaftaranWhatsapp;
 use App\Models\DetailSantri;
 use App\Models\User;
 use App\Support\Fonnte;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Queue;
 
 beforeEach(function () {
     config()->set('fonnte.enabled', true);
@@ -22,8 +21,51 @@ function submitPendaftaran(User $user, array $overrides = [])
     ], $overrides));
 }
 
-test('first pendaftaran submit queues the whatsapp confirmation', function () {
-    Queue::fake();
+function fakeFonnteOk(): void
+{
+    Http::fake([
+        'api.fonnte.com/*' => Http::response(['status' => true, 'id' => ['1']]),
+    ]);
+}
+
+test('first pendaftaran submit sends the whatsapp confirmation inline', function () {
+    fakeFonnteOk();
+    $user = User::factory()->create();
+
+    submitPendaftaran($user)
+        ->assertRedirect(route('pendaftaran'))
+        ->assertSessionHas('status');
+
+    Http::assertSent(fn ($request): bool => $request['target'] === '6281234567890');
+
+    $santri = DetailSantri::query()->where('user_id', $user->id)->firstOrFail();
+    expect($santri->pendaftaran_notified_at)->not->toBeNull();
+});
+
+test('a later edit does not send the confirmation again', function () {
+    fakeFonnteOk();
+    $user = User::factory()->create();
+    submitPendaftaran($user);
+
+    Http::fake();
+    submitPendaftaran($user, ['nama_panggilan' => 'Santri']);
+
+    Http::assertNothingSent();
+});
+
+test('nothing is sent while fonnte is disabled', function () {
+    config()->set('fonnte.enabled', false);
+    Http::fake();
+
+    submitPendaftaran(User::factory()->create());
+
+    Http::assertNothingSent();
+});
+
+test('a failed send still lets the submit succeed and leaves the santri unnotified', function () {
+    Http::fake([
+        'api.fonnte.com/*' => Http::response(['status' => false, 'reason' => 'token invalid']),
+    ]);
     $user = User::factory()->create();
 
     submitPendaftaran($user)
@@ -31,44 +73,15 @@ test('first pendaftaran submit queues the whatsapp confirmation', function () {
         ->assertSessionHas('status');
 
     $santri = DetailSantri::query()->where('user_id', $user->id)->firstOrFail();
-
-    Queue::assertPushed(
-        SendPendaftaranWhatsapp::class,
-        fn (SendPendaftaranWhatsapp $job): bool => $job->detailSantriId === $santri->getKey()
-    );
+    expect($santri->pendaftaran_notified_at)->toBeNull();
 });
 
-test('a later edit does not send the confirmation again', function () {
-    $user = User::factory()->create();
-    submitPendaftaran($user);
-
-    DetailSantri::query()
-        ->where('user_id', $user->id)
-        ->update(['pendaftaran_notified_at' => now()]);
-
-    Queue::fake();
-    submitPendaftaran($user, ['nama_panggilan' => 'Santri']);
-
-    Queue::assertNotPushed(SendPendaftaranWhatsapp::class);
-});
-
-test('nothing is queued while fonnte is disabled', function () {
-    config()->set('fonnte.enabled', false);
-    Queue::fake();
-
-    submitPendaftaran(User::factory()->create());
-
-    Queue::assertNotPushed(SendPendaftaranWhatsapp::class);
-});
-
-test('the job sends the message and marks the santri as notified', function () {
-    Http::fake([
-        'api.fonnte.com/*' => Http::response(['status' => true, 'id' => ['1']]),
-    ]);
+test('the action sends the message and marks the santri as notified', function () {
+    fakeFonnteOk();
 
     $santri = DetailSantri::factory()->create(['no_hp' => '081234567890']);
 
-    (new SendPendaftaranWhatsapp($santri->getKey()))->handle(new Fonnte);
+    expect(app(SendPendaftaranWhatsapp::class)->send($santri->getKey()))->toBeTrue();
 
     Http::assertSent(function ($request): bool {
         return $request->url() === 'https://api.fonnte.com/send'
@@ -81,25 +94,23 @@ test('the job sends the message and marks the santri as notified', function () {
     expect($santri->refresh()->pendaftaran_notified_at)->not->toBeNull();
 });
 
-test('the job fails so it can retry when fonnte rejects the message', function () {
+test('a rejected message is reported without throwing', function () {
     Http::fake([
         'api.fonnte.com/*' => Http::response(['status' => false, 'reason' => 'token invalid']),
     ]);
 
     $santri = DetailSantri::factory()->create(['no_hp' => '081234567890']);
 
-    expect(fn () => (new SendPendaftaranWhatsapp($santri->getKey()))->handle(new Fonnte))
-        ->toThrow(RuntimeException::class);
-
+    expect(app(SendPendaftaranWhatsapp::class)->send($santri->getKey()))->toBeFalse();
     expect($santri->refresh()->pendaftaran_notified_at)->toBeNull();
 });
 
-test('an unusable phone number is skipped instead of retried forever', function () {
+test('an unusable phone number is skipped', function () {
     Http::fake();
 
     $santri = DetailSantri::factory()->create(['no_hp' => '-']);
 
-    (new SendPendaftaranWhatsapp($santri->getKey()))->handle(new Fonnte);
+    expect(app(SendPendaftaranWhatsapp::class)->send($santri->getKey()))->toBeFalse();
 
     Http::assertNothingSent();
     expect($santri->refresh()->pendaftaran_notified_at)->toBeNull();
@@ -113,7 +124,7 @@ test('an already notified santri is not messaged twice', function () {
         'pendaftaran_notified_at' => now(),
     ]);
 
-    (new SendPendaftaranWhatsapp($santri->getKey()))->handle(new Fonnte);
+    expect(app(SendPendaftaranWhatsapp::class)->send($santri->getKey()))->toBeFalse();
 
     Http::assertNothingSent();
 });

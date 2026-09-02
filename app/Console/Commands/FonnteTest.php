@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Jobs\SendPendaftaranWhatsapp;
+use App\Actions\SendPendaftaranWhatsapp;
 use App\Models\DetailSantri;
 use App\Support\Fonnte;
 use Illuminate\Console\Command;

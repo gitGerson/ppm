@@ -1,64 +1,61 @@
 <?php
 
-namespace App\Jobs;
+namespace App\Actions;
 
 use App\Models\DetailSantri;
 use App\Support\Fonnte;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Facades\Log;
-use RuntimeException;
 
 /**
  * WhatsApp confirmation sent once, after a santri's first completed
  * pendaftaran submit. `pendaftaran_notified_at` records that it went out, so a
  * later edit of the same form does not send it a second time.
+ *
+ * Runs inline, inside the request that saved the form: there is no queue worker
+ * on this deployment. A failed send is therefore logged and swallowed rather
+ * than thrown -- the santri's data is already saved, so the submit must still
+ * succeed. The timestamp stays null, which lets a later edit try again.
  */
-class SendPendaftaranWhatsapp implements ShouldQueue
+class SendPendaftaranWhatsapp
 {
-    use Queueable;
-
-    public int $tries = 3;
-
-    public int $backoff = 60;
-
-    public function __construct(public int $detailSantriId) {}
+    public function __construct(private Fonnte $fonnte) {}
 
     /**
-     * @return array<int, object>
+     * @return bool whether a message actually went out
      */
-    public function middleware(): array
+    public function send(int $detailSantriId): bool
     {
-        return [(new WithoutOverlapping('pendaftaran-wa-'.$this->detailSantriId))->expireAfter(120)];
-    }
-
-    public function handle(Fonnte $fonnte): void
-    {
-        $santri = DetailSantri::query()->find($this->detailSantriId);
+        $santri = DetailSantri::query()->find($detailSantriId);
 
         if ($santri === null || $santri->pendaftaran_notified_at !== null) {
-            return;
+            return false;
         }
 
         $target = Fonnte::normalizeTarget($santri->no_hp);
 
-        // Nothing to retry against: the number itself is the problem.
         if ($target === null) {
             Log::warning('Notifikasi pendaftaran dilewati, nomor HP tidak dapat dihubungi', [
                 'detail_santri_id' => $santri->getKey(),
                 'no_hp' => $santri->no_hp,
             ]);
 
-            return;
+            return false;
         }
 
-        if (! $fonnte->send($target, self::message())) {
-            throw new RuntimeException('Gagal mengirim notifikasi pendaftaran ke '.$target);
+        if (! $this->fonnte->send($target, self::message())) {
+            // Fonnte::send() already logged the reason.
+            Log::warning('Notifikasi pendaftaran gagal dikirim', [
+                'detail_santri_id' => $santri->getKey(),
+                'target' => $target,
+            ]);
+
+            return false;
         }
 
         // Quietly: bookkeeping, not a change the Google Sheet needs to hear about.
         $santri->forceFill(['pendaftaran_notified_at' => now()])->saveQuietly();
+
+        return true;
     }
 
     /**
