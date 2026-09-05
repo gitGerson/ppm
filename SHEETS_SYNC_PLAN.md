@@ -1,130 +1,131 @@
 # Spreadsheet-driven DetailSantri sync
 
-Status: implementation plan only. Application behavior has not changed.
+## Implementation status
 
-## Decision and current draft
+Implemented locally. Google Apps Script initiates both directions:
+- Human sheet edits -> authenticated Laravel API -> database.
+- A five-minute Apps Script timer -> paginated Laravel API -> sheet.
 
-Google Apps Script will initiate both directions through an authenticated Laravel API:
+The API is disabled by default. No production API deployment or Google trigger installation has been performed. The production origin supplied by the project owner is `https://ppmalkautsarpwt.id`; the spreadsheet ID is still required.
 
-- Sheet edits -> API -> database.
-- Apps Script timer -> API -> current database records -> sheet.
+Understand the problem -> map the impact -> then code.
 
-Delayed visibility of database changes is accepted. Proposed initial polling interval: five minutes. Creation and deletion remain application-only; spreadsheet editors can update existing records.
+## Files and behavior
 
-The uncommitted draft is related to this feature, but is not the implementation to ship:
+- `routes/api.php`: versioned GET and PATCH routes.
+- `AuthenticateSheetSync`: bearer authentication, disabled/unconfigured fail-closed behavior and private no-store responses.
+- `ListSantriForSheetRequest` and `UpdateSantriFromSheetRequest`: pagination validation and strict editable-field allowlist.
+- `DetailSantri::sheetUpdateRules()`: reusable field constraints matching the database, including unsigned integer ranges, identifier lengths and strict dates.
+- `SantriSheetResource` / `SantriSheetSchema`: explicit fields, string identifiers and SHA-256 content revisions. Private upload paths and internal metadata are excluded.
+- `SantriSheetApiSync`: Service Layer with a database transaction and row lock. No Google calls.
+- `resources/js/santri-sheet-sync.js`: standalone Apps Script source, copied into Google's editor (not bundled into the website).
 
-| Draft change | Decision |
+The integration credential can read and update all DetailSantri records, but only the approved columns. It cannot create/delete records or change IDs/ownership. Limit access to the private script project and the spreadsheet accordingly; API token possession is integration-level authorization, not the identity of the individual sheet editor. Existing Policies still apply to interactive application users.
+
+No Repository abstraction or new PHP dependency was added. Artisan generated the framework classes. The route file was created manually because there is no route-file generator and `install:api` would install an unnecessary dependency.
+
+## API contract
+
+| Request | Result |
 | --- | --- |
-| Replace queued jobs with deferred observer callbacks | Drop: Laravel still initiates outbound Google requests, contrary to the chosen design. Failures and lock timeouts have no durable retry. |
-| Delete the two sync jobs | Relevant at cutover, after their callers are retired and pending jobs have drained. Do not ship separately. |
-| Remove scheduled pull and full rewrite | Relevant at cutover, after Apps Script owns synchronization. Removing these now stops automatic imports and recovery. |
-| Rewrite tests around deferred callbacks | Drop with the deferred implementation. Preserve existing sync coverage until replacement coverage passes. |
-| Modify vendor Pest test-results cache | Drop generated runtime noise; exclude from the feature commit. |
+| `GET /api/v1/sheet-sync/santris?per_page=100` | `data`, ordered `schema`, and `next_cursor` (null on the final page). |
+| `GET /api/v1/sheet-sync/santris?per_page=100&cursor=...` | Next ID-ordered page, maximum 100 rows. |
+| `PATCH /api/v1/sheet-sync/santris/{id}` | Accepts `base_revision` and `changes`; returns canonical `data` and message. |
 
-Recommended cleanup: restore the six reviewed draft files to HEAD, then implement the new design in focused commits. The cleanup has not been performed: automatic approval review rejected the destructive restore because the conditional discard authorization was considered ambiguous. No existing commit is to be reset or rewritten. The latest commit, `9e6c8cc3`, concerns WhatsApp notifications and stays intact.
+Each record contains `id`, `revision`, and `values`. JSON input uses strings for identifiers/dates, integers for numeric fields, booleans, and null for cleared optional fields. The script normalizes Indonesian boolean words and formatted integer amounts before sending them.
 
-## Existing code to reuse
+`409` preserves conflicting edits for a human choice. `422` rejects the whole update, leaving the database unchanged. `404` indicates a disabled API or missing record. `401` indicates bad/missing credentials. Successful duplicate retries acknowledge the current values without firing another model update. Requests are limited to 120/minute per integration by default.
 
-- `app/Support/SantriSheetSchema.php`: column names, editable allowlist, normalization and identifier formatting. Audit validation against database constraints before exposing an API; existing tolerant imports must not silently accept invalid API writes.
-- `app/Models/DetailSantri.php`: Eloquent model and relationships. Put shared rules and messages in named static model methods; compose endpoint-specific checks in Form Requests.
-- `app/Support/DetailSantriSheetSync.php`: retain legacy Google transport during transition. Reuse `withoutPush()` for API writes while the observer remains active.
-- Existing sync tests: retain schema, normalization, conflict and identifier coverage; replace transport-specific assertions at cutover.
+## Deploy Laravel
 
-Use the Service Layer pattern with thin controllers and Eloquent. A Repository abstraction is unnecessary. Do not install dependencies or create new top-level directories for this work without approval.
+Before deployment, back up the spreadsheet and reconcile pending edits. Stop the OLD scheduled sync commands and OLD observer producers, then drain the two old sync job classes while the previous release still exists. This release removes those classes: do not deploy it over a queue containing serialized old sync jobs. Keep unrelated queue workloads running.
 
-## 1. Laravel API
+1. Deploy this source and run `composer install --no-dev --optimize-autoloader` through the normal deployment process.
+2. Configure these environment variables on the server:
 
-Proposed versioned endpoints:
+   ```dotenv
+   SANTRI_SHEET_API_ENABLED=true
+   SANTRI_SHEET_API_TOKEN=<a newly generated secret of at least 32 characters>
+   SANTRI_SHEET_REQUESTS_PER_MINUTE=120
+   ```
 
-| Endpoint | Contract |
-| --- | --- |
-| `GET /api/v1/sheet-sync/santris` | Bounded, ID-ordered cursor pagination. Return explicit schema metadata, allowed field values and an opaque content revision for each row. |
-| `PATCH /api/v1/sheet-sync/santris/{santri}` | Accept `base_revision` and an allowlisted map of changed fields. Return the canonical saved row and its new revision. |
+3. Generate a credential locally on the server, for example `php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'`. Copy it privately to Apps Script properties; never put it in a cell, source commit, screenshot or chat.
+4. Refresh the application's configuration cache using the existing deployment procedure. Confirm the authenticated GET returns JSON and an unauthenticated request fails.
+5. No new database migration is required.
 
-Use an API Resource to serialize only approved columns. Preserve identifiers such as NIK, NISN and phone numbers as strings. Exclude credentials, private file contents and unrelated model attributes. Reject writes to IDs, ownership and sync metadata. API writes cannot create or delete records.
+The public API base URL in Apps Script must use HTTPS, must not redirect, and must point at the Laravel origin (no trailing API path). Set Laravel's production URL/proxy configuration through the normal environment setup.
 
-For the initial single integration, use a high-entropy bearer credential stored in Laravel environment-backed configuration and the private Apps Script project's Script Properties. Authenticate using dedicated middleware, constant-time comparison and fail-closed behavior when disabled or unconfigured. Restrict this credential to these endpoints and the approved record scope; do not treat a spreadsheet ID supplied by a caller as authentication. Add rate limiting and audit record IDs/outcomes without logging tokens or sensitive row bodies. Existing user Policies remain responsible for interactive app access.
+## Install Apps Script
 
-Sanctum is not currently installed. Do not run `install:api` or add a dependency implicitly. Register the API routes in `bootstrap/app.php`; inspect available Artisan generators first. A route file may be created manually only if this installation has no suitable generator, with that reason recorded in the implementation notes.
+Use a staging copy first. Google Apps Script access is not connected in this workspace, so the following setup must be performed by the spreadsheet owner.
 
-Require reachable HTTPS for Apps Script. Localhost on the developer machine cannot be called directly by Google.
+1. Find the spreadsheet ID in its URL: `https://docs.google.com/spreadsheets/d/SPREADSHEET_ID/edit`.
+2. Create a **standalone** Apps Script project owned by a stable administrator account. Only trusted maintainers should be project editors. Do not put credential-bearing code into a bound project accessible to ordinary sheet editors.
+3. Copy all of `resources/js/santri-sheet-sync.js` into `Code.gs`.
+4. In **Project Settings -> Script Properties**, set:
 
-## 2. Conflict and retry contract
+   | Property | Value |
+   | --- | --- |
+   | `API_BASE_URL` | `https://ppmalkautsarpwt.id` |
+   | `API_TOKEN` | The same private secret configured in Laravel |
+   | `SPREADSHEET_ID` | The ID from step 1 |
+   | `SHEET_NAME` | `DetailSantri API` (recommended new tab) |
 
-Proposed default: reject conflicting writes for explicit resolution, rather than silently discarding either side. This is an implementation assumption; the existing `conflict_winner` setting belongs to the legacy transport until cutover.
+5. Run `syncSantriSheet` manually and authorize Google access. This creates the new data tab and protected `_SantriSync` metadata tab. It refuses mismatched headers instead of replacing the old sheet. A populated matching tab with unacknowledged edits requires explicit conflict resolution.
+6. Check identifiers, representative fields, row counts and access permissions. Run the acceptance checks below.
+7. Run `installSantriSync`. It installs one edit trigger and one five-minute timer, replacing only this script's previous triggers. Re-running it does not create duplicate triggers.
+8. Run `syncSantriSheet` from the private script editor for manual refresh. Run `uninstallSantriSync` to stop automatic runs.
 
-Compute the revision from a stable canonical representation of synchronized model fields, not solely from second-resolution `updated_at`. Within a database transaction, load the row with `lockForUpdate()`, compare the supplied base revision, validate and save. Return `409` with the canonical row when another edit changed the revision. If the requested values already match, return success without repeating mutation side effects; this handles a retry after a lost response.
+The sheet has `Status sinkronisasi` and `Resolusi` columns. Choose **Database** to accept database values, or **Sheet** to explicitly resubmit local values against the latest database revision. A new concurrent database change still produces another conflict. For a record deleted from the database, **Database** discards the orphaned sheet row; **Sheet** never recreates a database record.
 
-Return `422` for invalid fields, `404` for missing records and `401`/`403` for authentication/authorization failures. The script retries transient network errors, `429` and `5xx` with bounded backoff, retaining pending edits for later runs. Validation errors and conflicts remain visible and are not retried blindly.
+The script protects headers, IDs, status and metadata. During sync it temporarily locks all data cells to prevent structural changes. The spreadsheet owner can bypass Google protections: do not sort, insert/delete rows or restructure columns during sync. Cell edits made in flight are re-read and merged so newer local edits survive.
 
-## 3. Apps Script
+Dirty rows are detected by comparing cells with their acknowledged baseline, even if an edit trigger was missed. Network failures, rate limiting and server errors retry with bounded backoff; unsent edits remain in the cells for the next run. Invalid/conflicting rows remain blocked until edited or explicitly resolved. The status header note shows the last completed refresh or a failure after the sheet has been opened. Earlier connection failures are visible in Apps Script Executions.
 
-Keep credential-bearing code in a standalone project restricted to trusted maintainers. Ordinary spreadsheet editing permission must not grant access to the integration credential. Configure spreadsheet ID, tab and API base URL as script configuration; credentials never appear in cells or committed source.
+Full pagination must finish before records are merged or deleted. Database deletions clear only clean rows (or rows explicitly resolved to Database); pending orphan edits remain visible. Deleting a sheet row never deletes a database record. API calls never follow redirects with the bearer credential. Sheet writes use literal text to preserve leading zeros and prevent formula interpretation.
 
-Install one spreadsheet edit trigger and one five-minute time trigger. The edit trigger processes affected rows, including multi-cell pastes, and ignores headers and read-only columns. The timer retries pending edits and fetches database changes. Both call the same synchronization function under a Script Lock. Trigger installation must be repeatable without creating duplicates.
+## Cleanup
 
-Maintain last acknowledged values, revision and pending/error state per record in a protected metadata tab, with no secrets. Detect dirty rows by comparing editable cells against their acknowledged values so a missed trigger does not lose an edit. Send only changed fields.
+Removed the deferred observer draft and retired the legacy observer registration, outbound sync service, two jobs, Artisan sync command, Laravel scheduler entries, Google config and FakeSheets test helper. Existing sync tests were rewritten around the replacement API; normalization/retry coverage also lives in the Node tests.
 
-Fetch all pages successfully before using the ID set to identify deleted records. Merge by record ID, never by row position. New database records appear in the sheet; missing database IDs are removed only after confirming absence and preserving any pending edits for review. Deleting a sheet row must never delete a database record; the next refresh restores it.
+Removed `revolution/laravel-google-sheets` and its unused transitive dependencies from `composer.json` / `composer.lock`. The local vendor tree is tracked by this repository and contains over 36,000 files belonging to those packages; it was not mass-deleted. Run Composer install in the deployment environment to reconcile installed packages and package discovery.
 
-Do not overwrite dirty, invalid or conflicted rows during refresh. Re-read the cells before applying a network response: Script Lock serializes scripts, but does not stop a human editing cells while a request is in flight. Preserve newer edits, and include a browser/manual acceptance test for this race. Avoid whole-sheet clear/rewrite. Protect structural changes during sync and re-resolve IDs before writes. Use text-safe cell writes so leading zeros and long identifiers survive and user text is not interpreted as formulas.
+Historical migrations and the old `sheet_hash` / `sheet_synced_at` columns remain to preserve existing database data and rollback compatibility. They are no longer read or written by synchronization. Service-account credentials already on disk were not deleted. No previous commit was reset.
 
-Show last successful refresh and per-row pending/error/conflict status. A conflict resolution action must explicitly choose the database value or resubmit the sheet edit against the current revision. A manual refresh may be added through a trusted execution path; do not expose the bearer token in a sheet-bound menu script shared with editors.
+## Verification
 
-Start with a full paginated read on each timer run, avoiding a new change-log schema. Measure real row count, payload size and execution duration before rollout. If it exceeds the execution budget, design incremental reads with deletion tracking before enabling production triggers.
+Local checks:
+- 56 Pest tests, 157 assertions passed across sync, registration validation and WhatsApp registration.
+- 16 Node tests passed for parsing, pagination failures, retries, conflicts, concurrent edits, deletion recovery and trigger setup.
+- Targeted Larastan analysis passed.
+- Pint applied to changed PHP files; Composer manifest/lock validation passed.
 
-## 4. Implementation sequence and generators
-
-Understand the problem -> map the impact -> then code. Inspect sibling conventions and version-specific Boost docs before each code phase.
-
-1. Add disabled-by-default API configuration, authentication, Resources, Requests and Service logic.
-2. Add API regression coverage and run focused tests using an isolated test database.
-3. Implement and exercise Apps Script against a staging sheet and HTTPS API.
-4. Complete the cutover checks below, then retire the legacy observer, jobs and scheduler entries together.
-
-Candidate Artisan commands; verify command availability and options before executing:
-
+Commands:
 ```sh
-php artisan make:controller Api/V1/SantriSheetSyncController --api --no-interaction
-php artisan make:middleware AuthenticateSheetSync --no-interaction
-php artisan make:request UpdateSantriFromSheetRequest --no-interaction
-php artisan make:resource SantriSheetResource --no-interaction
-php artisan make:class Support/SantriSheetApiSync --no-interaction
-php artisan make:test --pest SantriSheetApiSyncTest --no-interaction
+php artisan test --compact tests/Feature/DetailSantriSheetSyncTest.php tests/Feature/PendaftaranValidationTest.php tests/Feature/PendaftaranWhatsappNotificationTest.php
+node --test tests/Unit/SantriSheetScriptTest.cjs
+php vendor/bin/pint --dirty --format agent
 ```
 
-Keep only the required controller actions. No model or migration is planned initially. If schema changes become necessary, inspect the schema with Boost and generate a reversible migration with Artisan.
+Pest was run with `DB_CONNECTION=sqlite` and `DB_DATABASE=:memory:`; do not run RefreshDatabase against live data.
 
-## 5. Verification and acceptance
+Outstanding rollout acceptance:
+- Deploy and test the actual HTTPS API with the configured credential.
+- Verify Google trigger permissions, multi-row paste, timer recovery after failure, and conflict resolution.
+- Verify edits during refresh, database deletion with local pending edits, and full-page failure behavior.
+- Measure row volume, Google quota consumption and elapsed time (script yields after a four-minute work budget; a single Google request can outlast that budget).
+- Verify concurrent write behavior against an isolated MySQL database; SQLite tests do not establish MySQL locking behavior.
 
-- API authentication, disabled mode, rate limiting and field/record authorization.
-- Valid updates, invalid values, read-only field rejection, identifier round trips and pagination.
-- Revision conflicts, concurrent updates, duplicate retries and rollback behavior.
-- Incoming API updates make no outbound Google request.
-- Human edits reach the database, including multi-row paste and a missed-trigger recovery run.
-- App edits appear on the next successful timer run; failures leave pending edits intact.
-- Refresh preserves edits made while an API request is in flight.
-- Failed pagination never causes row deletion; database deletion never recreates a record from a stale sheet edit.
-- Trigger overlap and repeated setup do not duplicate writes or triggers.
-- After cutover, app saves/deletes and scheduled tasks make no Google Sheets calls.
+If data volume exceeds the full-read execution budget, keep triggers disabled and implement incremental reads with deletion tracking before rollout. This release does not claim live Google or production validation.
 
-Run focused Pest tests, then the relevant existing registration/DetailSantri tests. Run `vendor/bin/pint --dirty --format agent` for PHP changes and targeted static analysis. Validate transaction concurrency against MySQL as well as isolated SQLite tests. Perform Apps Script checks on a staging copy with representative data; unit tests cannot establish trigger delivery or Google quotas.
+## Rollback
 
-## 6. Cutover and rollback
-
-Before enabling the new script, back up the sheet and reconcile outstanding legacy edits. Deploy the API with access restricted, pause legacy sync scheduling and producers, and drain existing sync jobs before deleting their classes. Retain the other application queue workloads. Establish an acknowledged baseline before enabling Apps Script edits and its timer. Never run legacy full rewrites alongside spreadsheet-driven synchronization.
-
-Retire `DetailSantriObserver` and its `ObservedBy` registration, the two sync jobs and the two scheduler entries after the replacement passes acceptance. Keep the manual legacy command disabled during the new mode; decide its final removal in the cutover commit. Leave old sync columns and the Google package in place initially; dependency removal is separate scope.
-
-Rollback: disable Apps Script triggers and API writes first, preserve pending edits, reconcile them, then restore the legacy producers and schedules. Do not allow both systems to write at once.
-
-Completion means both directions work from Apps Script, errors and conflicts are recoverable, and Laravel no longer initiates Google sync. This planning commit does not deploy an API or install any triggers.
+Disable Apps Script triggers and Laravel API writes first. Preserve/reconcile pending sheet edits, then restore the previous release and its legacy scheduler/producers. Never enable both synchronization mechanisms together.
 
 ## References
 
 - [Google: installable triggers](https://developers.google.com/apps-script/guides/triggers/installable)
 - [Google: external API requests](https://developers.google.com/apps-script/guides/services/external)
-- [Google: Lock Service](https://developers.google.com/apps-script/reference/lock)
-- [Google: Properties Service](https://developers.google.com/apps-script/guides/properties)
+- [Google: protected sheets and ranges](https://developers.google.com/apps-script/reference/spreadsheet/protection)
+- [Google: Script Properties](https://developers.google.com/apps-script/guides/properties)
 - [Laravel 12: pessimistic locking](https://laravel.com/docs/12.x/queries#pessimistic-locking)
-- [Laravel 12: API Resources](https://laravel.com/docs/12.x/eloquent-resources)

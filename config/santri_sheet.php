@@ -1,35 +1,10 @@
 <?php
 
 return [
+    'api_enabled' => env('SANTRI_SHEET_API_ENABLED', false),
 
-    /*
-    |--------------------------------------------------------------------------
-    | Two-way Google Sheets sync for DetailSantri
-    |--------------------------------------------------------------------------
-    |
-    | Disabled by default so local and test environments never reach out to
-    | Google. Turn it on per-environment once the service account JSON is in
-    | place and the spreadsheet has been shared with that account's email.
-    |
-    */
+    // This integration can read and update all DetailSantri records, using only the schema allowlist.
+    'api_token' => env('SANTRI_SHEET_API_TOKEN'),
 
-    'enabled' => env('SANTRI_SHEET_SYNC_ENABLED', false),
-
-    'spreadsheet_id' => env('SANTRI_SHEET_ID'),
-
-    'sheet_name' => env('SANTRI_SHEET_NAME', 'DetailSantri'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Conflict policy
-    |--------------------------------------------------------------------------
-    |
-    | What to do when a row changed on both sides between two syncs. "database"
-    | keeps the app's value and overwrites the sheet; "sheet" does the reverse.
-    | Either way the conflict is logged.
-    |
-    */
-
-    'conflict_winner' => env('SANTRI_SHEET_CONFLICT_WINNER', 'database'),
-
+    'requests_per_minute' => (int) env('SANTRI_SHEET_REQUESTS_PER_MINUTE', 120),
 ];

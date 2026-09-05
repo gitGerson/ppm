@@ -1,334 +1,148 @@
 <?php
 
-use App\Jobs\RewriteSantriSheet;
-use App\Jobs\SyncDetailSantriToSheet;
 use App\Models\DetailSantri;
-use App\Support\DetailSantriSheetSync;
 use App\Support\SantriSheetSchema;
+use Illuminate\Support\Defer\DeferredCallbackCollection;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
-use Revolution\Google\Sheets\Facades\Sheets;
-use Tests\Support\FakeSheets;
-
-const SHEET = 'DetailSantri';
 
 beforeEach(function () {
-    config()->set('santri_sheet.enabled', true);
-    config()->set('santri_sheet.spreadsheet_id', 'test-spreadsheet');
-    config()->set('santri_sheet.sheet_name', SHEET);
-    config()->set('santri_sheet.conflict_winner', 'database');
-
-    $this->fake = new FakeSheets([SHEET => [SantriSheetSchema::headers()]]);
-    Sheets::swap($this->fake);
+    config()->set('santri_sheet.api_enabled', true);
+    config()->set('santri_sheet.api_token', str_repeat('a', 64));
+    config()->set('santri_sheet.requests_per_minute', 120);
+    $this->withToken(str_repeat('a', 64));
+    Http::preventStrayRequests();
 });
 
-/**
- * Column offset of a database column within the sheet row.
- */
-function columnIndex(string $dbColumn): int
+function sheetUpdatePayload(DetailSantri $santri, array $changes): array
 {
-    return (int) array_search($dbColumn, SantriSheetSchema::dbColumns(), true);
+    return ['base_revision' => SantriSheetSchema::revision($santri), 'changes' => $changes];
 }
 
-function sheetRowFor(FakeSheets $fake, DetailSantri $santri): ?array
-{
-    foreach ($fake->rows(SHEET) as $row) {
-        if (isset($row[0]) && (int) ltrim((string) $row[0], "'") === $santri->getKey()) {
-            return $row;
-        }
-    }
-
-    return null;
-}
-
-it('queues a push when a santri is created', function () {
-    Queue::fake();
-
-    $santri = DetailSantri::factory()->create();
-
-    Queue::assertPushed(
-        SyncDetailSantriToSheet::class,
-        fn (SyncDetailSantriToSheet $job): bool => $job->detailSantriId === $santri->getKey()
-    );
-});
-
-it('does not queue anything while the sync is disabled', function () {
-    config()->set('santri_sheet.enabled', false);
-    Queue::fake();
-
-    DetailSantri::factory()->create();
-
-    Queue::assertNothingPushed();
-});
-
-it('queues a full rewrite on delete so the row does not leave a gap', function () {
-    $santri = DetailSantri::factory()->create();
-
-    Queue::fake();
-    $santri->delete();
-
-    Queue::assertPushed(RewriteSantriSheet::class);
-});
-
-it('appends a new santri row and records the sync point', function () {
-    $santri = DetailSantri::factory()->create(['nama_lengkap' => 'Ahmad Fauzi']);
-
-    app(DetailSantriSheetSync::class)->pushOne($santri);
-
-    $row = sheetRowFor($this->fake, $santri);
-
-    expect($row)->not->toBeNull()
-        ->and($row[columnIndex('nama_lengkap')])->toBe('Ahmad Fauzi');
-
-    $santri->refresh();
-    expect($santri->sheet_hash)->not->toBeNull()
-        ->and($santri->sheet_synced_at)->not->toBeNull();
-});
-
-it('updates the existing row instead of appending a duplicate', function () {
-    $santri = DetailSantri::factory()->create(['nama_lengkap' => 'Ahmad Fauzi']);
-    $sync = app(DetailSantriSheetSync::class);
-
-    $sync->pushOne($santri);
-    $santri->update(['nama_lengkap' => 'Ahmad Fauzi Rahman']);
-    $sync->pushOne($santri);
-
-    // header + exactly one santri row
-    expect($this->fake->rows(SHEET))->toHaveCount(2)
-        ->and(sheetRowFor($this->fake, $santri)[columnIndex('nama_lengkap')])
-        ->toBe('Ahmad Fauzi Rahman');
-});
-
-it('writes identifier columns as text so leading zeros survive', function () {
-    $santri = DetailSantri::factory()->create(['no_hp' => '081234567890']);
-
-    app(DetailSantriSheetSync::class)->pushOne($santri);
-
-    expect(sheetRowFor($this->fake, $santri)[columnIndex('no_hp')])
-        ->toBe("'081234567890");
-});
-
-it('applies an edit made in the sheet back to the database', function () {
-    $santri = DetailSantri::factory()->create(['nama_lengkap' => 'Ahmad Fauzi']);
-    $sync = app(DetailSantriSheetSync::class);
-    $sync->pushOne($santri);
-
-    $rowNumber = 1;
-    $this->fake->tabs[SHEET][$rowNumber][columnIndex('nama_lengkap')] = 'Ahmad Fauzi Rahman';
-
-    $result = $sync->pull();
-
-    expect($result['applied'])->toBe(1)
-        ->and($santri->refresh()->nama_lengkap)->toBe('Ahmad Fauzi Rahman');
-});
-
-it('does not echo a sheet-originated change back to the sheet', function () {
-    $santri = DetailSantri::factory()->create(['nama_lengkap' => 'Ahmad Fauzi']);
-    $sync = app(DetailSantriSheetSync::class);
-    $sync->pushOne($santri);
-
-    $this->fake->tabs[SHEET][1][columnIndex('nama_lengkap')] = 'Ahmad Fauzi Rahman';
-
-    Queue::fake();
-    $sync->pull();
-
-    Queue::assertNotPushed(SyncDetailSantriToSheet::class);
-});
-
-it('leaves a row alone when neither side changed', function () {
-    $santri = DetailSantri::factory()->create();
-    $sync = app(DetailSantriSheetSync::class);
-    $sync->pushOne($santri);
-
-    $result = $sync->pull();
-
-    expect($result['applied'])->toBe(0)
-        ->and($result['pushed'])->toBe(0)
-        ->and($result['conflicts'])->toBe(0);
-});
-
-it('lets the database win when both sides changed', function () {
-    $santri = DetailSantri::factory()->create(['nama_lengkap' => 'Ahmad Fauzi']);
-    $sync = app(DetailSantriSheetSync::class);
-    $sync->pushOne($santri);
-
-    // Both sides move before the next sync. The push is left on the queue so
-    // the conflict is still outstanding when the scheduled pull runs.
-    $this->fake->tabs[SHEET][1][columnIndex('nama_lengkap')] = 'Dari Sheet';
-    $this->travel(1)->minutes();
-    Queue::fake();
-    $santri->update(['nama_lengkap' => 'Dari Database']);
-
-    $result = $sync->pull();
-
-    expect($result['conflicts'])->toBe(1)
-        ->and($santri->refresh()->nama_lengkap)->toBe('Dari Database')
-        ->and(sheetRowFor($this->fake, $santri)[columnIndex('nama_lengkap')])->toBe('Dari Database');
-});
-
-it('lets the sheet win when configured that way', function () {
-    config()->set('santri_sheet.conflict_winner', 'sheet');
-
-    $santri = DetailSantri::factory()->create(['nama_lengkap' => 'Ahmad Fauzi']);
-    $sync = app(DetailSantriSheetSync::class);
-    $sync->pushOne($santri);
-
-    $this->fake->tabs[SHEET][1][columnIndex('nama_lengkap')] = 'Dari Sheet';
-    $this->travel(1)->minutes();
-    Queue::fake();
-    $santri->update(['nama_lengkap' => 'Dari Database']);
-
-    $result = $sync->pull();
-
-    expect($result['conflicts'])->toBe(1)
-        ->and($santri->refresh()->nama_lengkap)->toBe('Dari Sheet');
-});
-
-it('does not let a queued push silently overwrite a sheet edit', function () {
-    $santri = DetailSantri::factory()->create(['nama_lengkap' => 'Ahmad Fauzi']);
-    $sync = app(DetailSantriSheetSync::class);
-    $sync->pushOne($santri);
-
-    // Sheet edited, then the app saves and the push job finally runs.
-    $this->fake->tabs[SHEET][1][columnIndex('nama_lengkap')] = 'Dari Sheet';
-    config()->set('santri_sheet.conflict_winner', 'sheet');
-    $santri->forceFill(['nama_lengkap' => 'Dari Database'])->saveQuietly();
-
-    $sync->pushOne($santri);
-
-    expect($santri->refresh()->nama_lengkap)->toBe('Dari Sheet');
-});
-
-it('overwrites a sheet edit on push when the database is the configured winner', function () {
-    $santri = DetailSantri::factory()->create(['nama_lengkap' => 'Ahmad Fauzi']);
-    $sync = app(DetailSantriSheetSync::class);
-    $sync->pushOne($santri);
-
-    $this->fake->tabs[SHEET][1][columnIndex('nama_lengkap')] = 'Dari Sheet';
-    $santri->forceFill(['nama_lengkap' => 'Dari Database'])->saveQuietly();
-
-    $sync->pushOne($santri);
-
-    expect(sheetRowFor($this->fake, $santri)[columnIndex('nama_lengkap')])->toBe('Dari Database')
-        ->and($santri->refresh()->nama_lengkap)->toBe('Dari Database');
-});
-
-it('rejects an invalid value without wiping the stored one', function () {
-    $santri = DetailSantri::factory()->create([
-        'jenis_kelamin' => 'Laki-laki',
-        'nama_lengkap' => 'Ahmad Fauzi',
-    ]);
-    $sync = app(DetailSantriSheetSync::class);
-    $sync->pushOne($santri);
-
-    // A typo in the enum column, alongside a perfectly good name edit.
-    $this->fake->tabs[SHEET][1][columnIndex('jenis_kelamin')] = 'Lakilaki';
-    $this->fake->tabs[SHEET][1][columnIndex('nama_lengkap')] = 'Ahmad Fauzi Rahman';
-
-    $sync->pull();
-    $santri->refresh();
-
-    expect($santri->jenis_kelamin)->toBe('Laki-laki')
-        ->and($santri->nama_lengkap)->toBe('Ahmad Fauzi Rahman')
-        // the corrected value is written back over the typo
-        ->and(sheetRowFor($this->fake, $santri)[columnIndex('jenis_kelamin')])->toBe('Laki-laki');
-});
-
-it('rejects unsigned tiny integer values outside the database range', function (string $field) {
-    $santri = DetailSantri::factory()->create([$field => 2]);
-    $sync = app(DetailSantriSheetSync::class);
-    $sync->pushOne($santri);
-
-    $this->fake->tabs[SHEET][1][columnIndex($field)] = '256';
-
-    $sync->pull();
-    $santri->refresh();
-
-    expect($santri->getAttribute($field))->toBe(2)
-        ->and(sheetRowFor($this->fake, $santri)[columnIndex($field)])->toBe('2');
+it('fails closed without valid integration authentication', function (bool $enabled, ?string $configuredToken, string $sentToken, int $status) {
+    config()->set('santri_sheet.api_enabled', $enabled);
+    config()->set('santri_sheet.api_token', $configuredToken);
+    $this->withToken($sentToken)->getJson('/api/v1/sheet-sync/santris')->assertStatus($status);
 })->with([
-    'anak ke' => 'anak_ke',
-    'jumlah saudara' => 'jumlah_saudara',
+    'disabled' => [false, str_repeat('a', 64), str_repeat('a', 64), 404],
+    'unconfigured' => [true, null, '', 401],
+    'weak token' => [true, 'short', 'short', 401],
+    'missing token' => [true, str_repeat('a', 64), '', 401],
+    'wrong token' => [true, str_repeat('a', 64), str_repeat('b', 64), 401],
 ]);
 
-it('does not re-apply a rejected cell as a fresh edit on the next run', function () {
-    $santri = DetailSantri::factory()->create(['jenis_kelamin' => 'Laki-laki']);
-    $sync = app(DetailSantriSheetSync::class);
-    $sync->pushOne($santri);
-
-    $this->fake->tabs[SHEET][1][columnIndex('jenis_kelamin')] = 'Lakilaki';
-    $sync->pull();
-
-    $result = $sync->pull();
-
-    expect($result['applied'])->toBe(0)
-        ->and($result['conflicts'])->toBe(0);
+it('exports paginated records and only approved values', function () {
+    $santris = DetailSantri::factory()->count(3)->create(['NIK' => '0012345678901234', 'no_hp' => '08123456789']);
+    $first = $this->getJson('/api/v1/sheet-sync/santris?per_page=2')
+        ->assertOk()->assertJsonCount(2, 'data')
+        ->assertJsonPath('data.0.id', $santris[0]->id)
+        ->assertJsonPath('data.0.values.NIK', '0012345678901234')
+        ->assertJsonPath('data.0.values.no_hp', '08123456789')
+        ->assertJsonMissingPath('data.0.values.image_ktp_path')
+        ->assertJsonMissingPath('data.0.values.sheet_hash')
+        ->assertJsonMissingPath('data.0.values.pendaftaran_notified_at');
+    expect($first->headers->get('Cache-Control'))->toContain('no-store');
+    $this->getJson('/api/v1/sheet-sync/santris?per_page=2&cursor='.urlencode($first->json('next_cursor')))
+        ->assertOk()->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $santris[2]->id)
+        ->assertJsonPath('next_cursor', null);
 });
 
-it('parses indonesian formatted numbers and boolean words', function () {
-    $santri = DetailSantri::factory()->create([
-        'penghasilan_ayah' => 1_000_000,
-        'is_mondok' => false,
-    ]);
-    $sync = app(DetailSantriSheetSync::class);
-    $sync->pushOne($santri);
+it('rejects invalid pagination', function (string $query) {
+    $this->getJson('/api/v1/sheet-sync/santris?'.$query)->assertUnprocessable();
+})->with(['per_page=101', 'per_page=0', 'cursor=garbage', 'cursor[]=1']);
 
-    $this->fake->tabs[SHEET][1][columnIndex('penghasilan_ayah')] = 'Rp 5.000.000';
-    $this->fake->tabs[SHEET][1][columnIndex('is_mondok')] = 'Ya';
-
-    $sync->pull();
-    $santri->refresh();
-
-    expect($santri->penghasilan_ayah)->toBe(5000000)
-        ->and((bool) $santri->is_mondok)->toBeTrue();
-});
-
-it('skips sheet rows that have no id', function () {
-    DetailSantri::factory()->create();
-    $sync = app(DetailSantriSheetSync::class);
-    $sync->pushOne(DetailSantri::query()->first());
-
-    $manualRow = array_fill(0, count(SantriSheetSchema::dbColumns()), '');
-    $manualRow[columnIndex('nama_lengkap')] = 'Ditulis Manual';
-    $this->fake->tabs[SHEET][] = $manualRow;
-
-    $result = $sync->pull();
-
-    expect($result['skipped'])->toHaveCount(1)
-        ->and($result['skipped'][0])->toContain('tanpa ID')
-        ->and(DetailSantri::query()->count())->toBe(1);
-});
-
-it('reports sheet rows pointing at a deleted santri', function () {
-    $sync = app(DetailSantriSheetSync::class);
-
-    $orphanRow = array_fill(0, count(SantriSheetSchema::dbColumns()), '');
-    $orphanRow[0] = '9999';
-    $this->fake->tabs[SHEET][] = $orphanRow;
-
-    $result = $sync->pull();
-
-    expect($result['skipped'][0])->toContain('9999');
-});
-
-it('rewrites the whole sheet from the database', function () {
-    DetailSantri::factory()->count(3)->create();
-    $this->fake->tabs[SHEET][] = ['baris', 'sampah'];
-
-    $written = app(DetailSantriSheetSync::class)->pushAll();
-
-    expect($written)->toBe(3)
-        ->and($this->fake->rows(SHEET))->toHaveCount(4)
-        ->and($this->fake->rows(SHEET)[0])->toBe(SantriSheetSchema::headers());
-});
-
-it('does nothing at all when the sync is disabled', function () {
-    config()->set('santri_sheet.enabled', false);
-
+it('updates allowed fields and returns the saved revision', function () {
     $santri = DetailSantri::factory()->create();
-    $sync = app(DetailSantriSheetSync::class);
+    $response = $this->patchJson('/api/v1/sheet-sync/santris/'.$santri->id, sheetUpdatePayload($santri, [
+        'nama_lengkap' => 'Ahmad Fauzi',
+        'NIK' => '0012345678901234',
+        'is_mondok' => true,
+        'tanggal_lahir' => '2005-01-02',
+        'penghasilan_ayah' => 5000000,
+    ]))->assertOk()->assertJsonPath('data.values.nama_lengkap', 'Ahmad Fauzi')
+        ->assertJsonPath('data.values.NIK', '0012345678901234')
+        ->assertJsonPath('data.values.is_mondok', true);
+    expect($response->json('data.revision'))->toBe(SantriSheetSchema::revision($santri->refresh()));
+    Http::assertNothingSent();
+});
 
-    $sync->pushOne($santri);
+it('rejects invalid values atomically', function (string $field, mixed $value) {
+    $santri = DetailSantri::factory()->create(['nama_lengkap' => 'Original']);
+    $payload = sheetUpdatePayload($santri, ['nama_lengkap' => 'Changed', $field => $value]);
+    $this->patchJson('/api/v1/sheet-sync/santris/'.$santri->id, $payload)
+        ->assertUnprocessable()->assertJsonValidationErrors('changes.'.$field);
+    expect($santri->refresh()->nama_lengkap)->toBe('Original');
+})->with([
+    'required name' => ['nama_lengkap', null],
+    'long name' => ['nama_lengkap', str_repeat('a', 256)],
+    'NIK length' => ['NIK', str_repeat('1', 17)],
+    'numeric identifier' => ['NIK', 123],
+    'email' => ['email', 'invalid'],
+    'enum' => ['jenis_kelamin', 'Lakilaki'],
+    'date rollover' => ['tanggal_lahir', '2005-02-30'],
+    'year lower bound' => ['tahun_masuk_ppm', 1900],
+    'year upper bound' => ['tahun_masuk_ppm', 2156],
+    'negative integer' => ['anak_ke', -1],
+    'tiny integer overflow' => ['jumlah_saudara', 256],
+    'small integer overflow' => ['tinggi_badan', 65536],
+    'income overflow' => ['penghasilan_ayah', 4294967296],
+    'fraction' => ['berat_badan', 2.5],
+    'invalid boolean' => ['is_mondok', 'perhaps'],
+]);
 
-    expect($this->fake->calls)->toBeEmpty()
-        ->and($sync->pull()['applied'])->toBe(0);
+it('rejects ownership and unknown column writes despite globally unguarded models', function (string $field) {
+    $santri = DetailSantri::factory()->create();
+    $this->patchJson('/api/v1/sheet-sync/santris/'.$santri->id, sheetUpdatePayload($santri, [$field => '1']))
+        ->assertUnprocessable()->assertJsonValidationErrors('changes');
+})->with(['id', 'user_id', 'sheet_hash', 'image_ktp_path', 'password', 'updated_at']);
+
+it('allows nullable cells to be cleared', function () {
+    $santri = DetailSantri::factory()->create(['NIK' => '123']);
+    $this->patchJson('/api/v1/sheet-sync/santris/'.$santri->id, sheetUpdatePayload($santri, ['NIK' => null]))
+        ->assertOk()->assertJsonPath('data.values.NIK', null);
+});
+
+it('detects a concurrent database change even within the same second', function () {
+    $santri = DetailSantri::factory()->create(['nama_lengkap' => 'Initial']);
+    $payload = sheetUpdatePayload($santri, ['nama_lengkap' => 'Sheet']);
+    $santri->update(['nama_lengkap' => 'Database']);
+    $this->patchJson('/api/v1/sheet-sync/santris/'.$santri->id, $payload)
+        ->assertConflict()->assertJsonPath('data.values.nama_lengkap', 'Database');
+    expect($santri->refresh()->nama_lengkap)->toBe('Database');
+});
+
+it('acknowledges a lost-response retry without firing another update', function () {
+    $santri = DetailSantri::factory()->create(['nama_lengkap' => 'Initial']);
+    $payload = sheetUpdatePayload($santri, ['nama_lengkap' => 'Sheet']);
+    $this->patchJson('/api/v1/sheet-sync/santris/'.$santri->id, $payload)->assertOk();
+    Event::fake(['eloquent.updated: '.DetailSantri::class]);
+    $this->patchJson('/api/v1/sheet-sync/santris/'.$santri->id, $payload)->assertOk();
+    Event::assertNotDispatched('eloquent.updated: '.DetailSantri::class);
+});
+
+it('returns not found for deleted records and has no create or delete API', function () {
+    $santri = DetailSantri::factory()->create();
+    $payload = sheetUpdatePayload($santri, ['nama_lengkap' => 'Sheet']);
+    $santri->delete();
+    $this->patchJson('/api/v1/sheet-sync/santris/'.$santri->id, $payload)->assertNotFound();
+    $this->postJson('/api/v1/sheet-sync/santris', $payload)->assertStatus(405);
+    $this->deleteJson('/api/v1/sheet-sync/santris/'.$santri->id)->assertStatus(405);
+});
+
+it('throttles the integration across requests', function () {
+    config()->set('santri_sheet.requests_per_minute', 1);
+    $this->getJson('/api/v1/sheet-sync/santris')->assertOk();
+    $this->getJson('/api/v1/sheet-sync/santris')->assertTooManyRequests();
+});
+
+it('does not queue or defer outbound sync for application changes', function () {
+    Queue::fake();
+    $santri = DetailSantri::factory()->create();
+    $santri->update(['nama_lengkap' => 'Updated']);
+    $santri->delete();
+    Queue::assertNothingPushed();
+    expect(app(DeferredCallbackCollection::class))->toHaveCount(0);
+    Http::assertNothingSent();
 });

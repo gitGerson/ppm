@@ -2,14 +2,13 @@
 
 namespace App\Models;
 
-use App\Observers\DetailSantriObserver;
+use App\Support\SantriSheetSchema;
 use Database\Factories\DetailSantriFactory;
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Validation\Rule;
 
-#[ObservedBy(DetailSantriObserver::class)]
 class DetailSantri extends Model
 {
     /** @use HasFactory<DetailSantriFactory> */
@@ -18,6 +17,57 @@ class DetailSantri extends Model
     public const MAX_ANAK_KE = 255;
 
     public const MAX_JUMLAH_SAUDARA = 255;
+
+    /** @return array<string, array<mixed>> */
+    public static function sheetUpdateRules(): array
+    {
+        $rules = [];
+
+        foreach (SantriSheetSchema::columns() as $field => $column) {
+            if (! $column['editable']) {
+                continue;
+            }
+
+            $limits = match ($field) {
+                'anak_ke', 'jumlah_saudara' => 255,
+                'tinggi_badan', 'berat_badan' => 65535,
+                default => 4294967295,
+            };
+            $length = match ($field) {
+                'NISN' => 20,
+                'NIK', 'no_kk', 'nik_ayah', 'nik_ibu' => 16,
+                default => 255,
+            };
+            $typeRules = match ($column['type']) {
+                'bool' => ['boolean'],
+                'int' => ['integer', 'min:0', 'max:'.$limits],
+                'year' => ['integer', 'between:1901,2155'],
+                'date' => ['date_format:Y-m-d', 'after_or_equal:1000-01-01', 'before_or_equal:9999-12-31'],
+                'enum' => ['string', Rule::in($column['values'])],
+                default => ['string', 'max:'.$length],
+            };
+
+            $rules[$field] = [
+                'sometimes',
+                $field === 'nama_lengkap' ? 'required' : 'nullable',
+                ...$typeRules,
+                ...($field === 'email' ? ['email'] : []),
+            ];
+        }
+
+        return $rules;
+    }
+
+    /** @return array<string, string> */
+    public static function sheetValidationMessages(): array
+    {
+        return [
+            'changes.nama_lengkap.required' => 'Nama lengkap wajib diisi.',
+            'changes.array' => 'Perubahan berisi kolom yang tidak dapat diedit.',
+            'changes.*.max' => 'Nilai melebihi batas kolom.',
+            'changes.*.date_format' => 'Gunakan format tanggal YYYY-MM-DD.',
+        ];
+    }
 
     protected $table = 'detail_santris';
 
@@ -92,7 +142,6 @@ class DetailSantri extends Model
     protected function casts(): array
     {
         return [
-            'sheet_synced_at' => 'datetime',
             'pendaftaran_notified_at' => 'datetime',
         ];
     }
